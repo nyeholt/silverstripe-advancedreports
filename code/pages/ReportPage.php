@@ -110,8 +110,7 @@ class ReportPage_Controller extends Page_Controller {
 	 */
 	public function htmlpreview() {
 		// create the HTML report in memory
-		// singleton('FrontendReportService')->createReport($this->data()->ReportTemplate());
-		echo "This is the report's contents";
+		return singleton('FrontendReportService')->createReport($this->data()->ReportTemplate());
 	}
 
 	/**
