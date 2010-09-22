@@ -34,6 +34,9 @@ class HtmlReportFormatter extends ReportFormatter {
 			$oddEven = $rowNum % 2 == 0 ? 'even' : 'odd';
 			$body[] = '<tr class="reportrow '.$oddEven.'">';
 			foreach ($row as $field => $value) {
+				if ($value == '(no data)') {
+					$value = '<span class="noReportData">(no data)</span>';
+				}
 				$body[] = '<td class="reportcell '.$field.'">'.$value.'</td>';
 			}
 			$body[] = '</tr>';

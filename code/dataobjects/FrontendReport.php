@@ -10,6 +10,14 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class FrontendReport extends DataObject {
+
+	/**
+	 * What conversion needs to occur? 
+	 * 
+	 * @var array
+	 */
+	public static $conversion_formats = array('pdf' => 'html');
+
     public static $db = array(
 		'Title' => 'Varchar(128)',
 		'Description' => 'Text',
@@ -18,9 +26,9 @@ class FrontendReport extends DataObject {
 	public static $has_one = array(
 		'Report' => 'FrontendReport',			// never set for the 'template' report for a page, but used to
 												// list all the generated reports. 
-		'HTMLFile' => 'File',
-		'CSVFile' => 'File',
-		'PDFFile' => 'File',
+		'HTMLFiles' => 'Folder',
+		'CSVFiles' => 'Folder',
+		'PDFFiles' => 'Folder',
 	);
 
 	public function getReportName() {
@@ -69,12 +77,19 @@ class FrontendReport extends DataObject {
 	 * the raw content of the report, or an object that encapsulates the report (eg a PDF). 
 	 * 
 	 * @param String $format
+	 * @param boolean $store
+	 *				Whether to store the created report. 
 	 */
-	public function createReport($format='html') {
+	public function createReport($format='html', $store = false) {
+		
+		$convertTo = null;
+		if (isset(self::$conversion_formats[$format])) {
+			$convertTo = 'pdf';
+			$format = self::$conversion_formats[$format];
+		}
+
 		$template = get_class($this) . '_' . $format;
-
 		$content = "Formatter for $format not found!";
-
 		$formatter = ucfirst($format).'ReportFormatter';
 		if (class_exists($formatter)) {
 			$formatter = new $formatter($this);
@@ -83,9 +98,44 @@ class FrontendReport extends DataObject {
 
 		$output = $this->customise(array('ReportContent' => $content))->renderWith($template);
 
-		if (in_array($format, array('html', 'csv'))) {
+		if (!$convertTo) {
 			return $output;
 		}
+
+
+		// hard coded for now, need proper content transformations....
+		switch ($convertTo) {
+			case 'pdf': {
+				if ($store) {
+					return singleton('PdfRenditionService')->render($output);
+				} else {
+					singleton('PdfRenditionService')->render($output, 'browser');
+				}
+				break;
+			}
+			default: {
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Generates an actual report file.
+	 *
+	 * @param string $format
+	 */
+	public function generateReport($format='html') {
+
+	}
+
+	/**
+	 * Gets the report folder needed for storing the given format
+	 * files
+	 *
+	 * @param String $format
+	 */
+	protected function getReportFolderFor($format) {
+		
 	}
 }
 

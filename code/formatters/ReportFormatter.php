@@ -102,7 +102,7 @@ abstract class ReportFormatter {
 				$value = $do->$field;
 				// need at least soemthing to put in the cell...
 				if (!$value) {
-					$value = '<span class="noReportData">(no data)</span>';
+					$value = '(no data)';
 				}
 
 				if (in_array($field, $colsToBlank)) {
