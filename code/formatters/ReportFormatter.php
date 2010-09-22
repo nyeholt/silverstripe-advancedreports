@@ -93,16 +93,24 @@ abstract class ReportFormatter {
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
+		$mapping = $this->report->getFieldMapping();
 
 		$i = 0;
 		$previousVals = array();
-		foreach ($dataObjects as $do) {
+		foreach ($dataObjects as $item) {
 			$row = array();
 			foreach ($this->headers as $field => $display) {
-				$value = $do->$field;
-				// need at least soemthing to put in the cell...
-				if (!$value) {
-					$value = '(no data)';
+				$rawValue = is_object($item) ? $item->$field : $item[$field];
+
+				$value = '(no data)';
+
+				// based on the field name we've been given, lets
+				// see if we can resolve it to a value on our data object
+				if (isset($mapping[$field]) && $rawValue) {
+					$format = $mapping[$field];
+					eval('$value = ' . $format . ';');
+				} else if ($rawValue) {
+					$value = $rawValue;
 				}
 
 				if (in_array($field, $colsToBlank)) {

@@ -55,9 +55,22 @@ class FrontendReport extends DataObject {
 
 	/**
 	 * Retrieve the raw data objects set for this report
+	 *
+	 * Note that the "DataObjects" don't necessarily need to implement DataObjectInterface;
+	 * we can return whatever objects (or array maps) that we like.
+	 * 
 	 */
 	public function getDataObjects() {
 		throw new Exception("Abstract method called; please implement getDataObjects()");
+	}
+
+	/**
+	 * Get any field formatting options.
+	 *
+	 * 
+	 */
+	public function getFieldFormats() {
+		return array();
 	}
 
 
@@ -70,6 +83,20 @@ class FrontendReport extends DataObject {
 	 * has the same value as current is blanked out. 
 	 */
 	public function getDuplicatedBlankingFields() {
+		return array();
+	}
+
+	/**
+	 * Get the mappings to be used for values of this report.
+	 *
+	 * This is an array of field names to mappings - basically, the same code as TableListField
+	 * setFieldMapping
+	 *
+	 * array(
+	 *		'FieldName' => 'Mapping'
+	 * );
+	 */
+	public function getFieldMapping() {
 		return array();
 	}
 
