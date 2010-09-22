@@ -25,7 +25,8 @@ class ReportPage extends Page {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$types = singleton('FrontendReportService')->getReportTypes();
+		$types = ClassInfo::subclassesFor('FrontendReport');
+		array_shift($types);
 		array_unshift($types, '');
 		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ReportType', _t('FrontendReport.REPORT_TYPE', 'Report Type'), $types), 'Content');
 
@@ -79,18 +80,28 @@ class ReportPage_Controller extends Page_Controller {
 
 	/**
 	 * Update the report template definition
-	 *
+	 * 
 	 * @param array $data
 	 * @param Form $form
 	 * @param SS_HTTPRequest $request 
 	 */
 	public function save($data, Form $form, $request) {
+		$this->saveReportTemplate($data, $form);
+		$this->redirect($this->data()->Link());
+	}
+
+	/**
+	 * Save the current report template
+	 *
+	 * @param array $data
+	 * @param Form $form
+	 */
+	protected function saveReportTemplate($data, $form) {
 		$template = $this->data()->ReportTemplate();
 		if ($template && $template->ID) {
 			$form->saveInto($template);
 			$template->write();
 		}
-		$this->redirect($this->data()->Link());
 	}
 
 	/**
@@ -102,6 +113,7 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function preview($data, Form $form, $request) {
+		$this->saveReportTemplate($data, $form);
 		$this->redirect($this->data()->Link('htmlpreview'));
 	}
 
@@ -109,8 +121,8 @@ class ReportPage_Controller extends Page_Controller {
 	 * View a report in HTML format
 	 */
 	public function htmlpreview() {
-		// create the HTML report in memory
-		return singleton('FrontendReportService')->createReport($this->data()->ReportTemplate());
+		// create the HTML report and spit it out immediately
+		echo $this->data()->ReportTemplate()->createReport();
 	}
 
 	/**
@@ -123,6 +135,6 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function generate(array $data, Form $form, $request) {
-
+		
 	}
 }

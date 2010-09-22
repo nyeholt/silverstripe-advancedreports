@@ -36,7 +36,6 @@ class FrontendReportService {
 		return $this->reportTypes;
 	}
 
-	
 	/**
 	 * Create a report for the given frontend report, with the given format
 	 *
@@ -55,6 +54,5 @@ class FrontendReportService {
 		if (in_array($format, array('html', 'csv'))) {
 			return $output;
 		}
-
 	}
 }
