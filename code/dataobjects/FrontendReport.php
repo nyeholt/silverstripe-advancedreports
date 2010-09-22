@@ -26,9 +26,9 @@ class FrontendReport extends DataObject {
 	public static $has_one = array(
 		'Report' => 'FrontendReport',			// never set for the 'template' report for a page, but used to
 												// list all the generated reports. 
-		'HTMLFiles' => 'Folder',
-		'CSVFiles' => 'Folder',
-		'PDFFiles' => 'Folder',
+		'HTMLFile' => 'File',
+		'CSVFile' => 'File',
+		'PDFFile' => 'File',
 	);
 
 	public function getReportName() {
@@ -41,6 +41,7 @@ class FrontendReport extends DataObject {
 	 * @param FieldSet $fields
 	 */
 	public function updateReportFields($fields) {
+		
 	}
 
 	/**
@@ -99,17 +100,29 @@ class FrontendReport extends DataObject {
 		$output = $this->customise(array('ReportContent' => $content))->renderWith($template);
 
 		if (!$convertTo) {
-			return $output;
-		}
+			if ($store) {
+				// stick it in a temp file?
+				$outputFile = tempnam(TEMP_FOLDER, $format);
+				if (file_put_contents($outputFile, $output)) {
+					return new FrontendReportOutput(null, $outputFile);
+				} else {
+					throw new Exception("Failed creating report"); 
+				}
 
+			} else {
+				return new FrontendReportOutput($output);
+			}
+		}
 
 		// hard coded for now, need proper content transformations....
 		switch ($convertTo) {
 			case 'pdf': {
 				if ($store) {
-					return singleton('PdfRenditionService')->render($output);
+					$filename = singleton('PdfRenditionService')->render($output);
+					return new FrontendReportOutput(null, $filename);
 				} else {
 					singleton('PdfRenditionService')->render($output, 'browser');
+					return new FrontendReportOutput();
 				}
 				break;
 			}
@@ -125,17 +138,56 @@ class FrontendReport extends DataObject {
 	 * @param string $format
 	 */
 	public function generateReport($format='html') {
+		$field = strtoupper($format).'FileID';
+		$storeIn = $this->getReportFolder();
 
+		$name = $this->Title . '.' . $format;
+		
+		$childId = $storeIn->constructChild($name);
+		$file = DataObject::get_by_id('File', $childId);
+
+		// okay, now we should copy across... right?
+		$file->setName($name);
+		$file->write();
+
+		// create the raw report file
+		$output = $this->createReport($format, true);
+		
+		if (file_exists($output->filename)) {
+			copy($output->filename, $file->getFullPath());
+		}
+
+		// make sure to set the appropriate ID
+		$this->$field = $file->ID;
+		$this->write();
 	}
 
 	/**
-	 * Gets the report folder needed for storing the given format
-	 * files
+	 * Gets the report folder needed for storing the report files
 	 *
 	 * @param String $format
 	 */
-	protected function getReportFolderFor($format) {
-		
+	protected function getReportFolder() {
+		$id = $this->ReportID;
+		if (!$id) {
+			$id = 'preview';
+		}
+		$folderName = 'frontend-reports/'.$this->ReportID.'/'.$this->ID;
+		return Folder::findOrMake($folderName);
 	}
 }
 
+/**
+ * Wrapper around a report output that might be raw content or a filename to the
+ * report
+ *
+ */
+class FrontendReportOutput {
+	public $filename;
+	public $content;
+
+	public function __construct($content, $filename=null) {
+		$this->filename = $filename;
+		$this->content = $content;
+	}
+}

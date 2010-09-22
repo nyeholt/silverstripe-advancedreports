@@ -122,19 +122,41 @@ class ReportPage_Controller extends Page_Controller {
 	 */
 	public function htmlpreview() {
 		// create the HTML report and spit it out immediately
-		echo $this->data()->ReportTemplate()->createReport();
+		$output = $this->data()->ReportTemplate()->createReport();
+		if ($output->filename) {
+			// do nothing
+		}
+		if ($output->content) {
+			echo $output->content;
+		}
 	}
 
 	/**
 	 * Generates the given report.
 	 *
-	 * This creates an HTML, CSV and PDF version of the report. 
+	 * This creates an HTML, CSV and PDF version of the report, stores the
+	 * report in its list of 'saved' reports, and clears up the 'template'
+	 * to be reused.
 	 * 
 	 * @param array $data
 	 * @param Form $form
 	 * @param SS_HTTPRequest $request
 	 */
 	public function generate(array $data, Form $form, $request) {
-		
+		// okay if we're generating we need to do a few things
+		// 1. clone the current template as a saved version
+		// 2. create the actual files
+
+		$currentTemplate = $this->data()->ReportTemplate();
+		$report = $currentTemplate->duplicate(false);
+		$report->Title = $this->data()->Title . ' ' . date('Y-m-d');
+		$report->ReportID = $this->data()->ID;
+		$report->write();
+
+		$report->generateReport('html');
+		$report->generateReport('csv');
+		$report->generateReport('pdf');
+
+		$this->redirect($this->data()->Link());
 	}
 }
