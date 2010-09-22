@@ -6,7 +6,6 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class CsvReportFormatter extends ReportFormatter {
-
 	/**
 	 * Create a header for the report
 	 */
@@ -25,13 +24,16 @@ class CsvReportFormatter extends ReportFormatter {
 	 */
 	protected function createBody() {
 		$body = array();
+
 		foreach ($this->data as $row) {
+			$csvRow = array();
 			foreach ($row as $field => $value) {
-				$body[] = $value;
+				$csvRow[] = $value;
 			}
+			$body[] = '"'.implode('","', $csvRow).'"';
 		}
 
-		return '"'.implode('","', $body).'"';
+		return implode("\n", $body);
 	}
 
 	/**

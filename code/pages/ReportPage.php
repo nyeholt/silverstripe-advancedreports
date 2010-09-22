@@ -19,10 +19,6 @@ class ReportPage extends Page {
 		'ReportTemplate' => 'FrontendReport',
 	);
 
-	public static $has_many = array(
-		'Reports' => 'FrontendReport',
-	);
-
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$types = ClassInfo::subclassesFor('FrontendReport');
@@ -50,17 +46,29 @@ class ReportPage extends Page {
 			$this->ReportTemplateID = $template->ID;
 		}
 	}
+
+	/**
+	 * This is needed because a has_many to frontendreport seems to think it needs
+	 * a parent ID. I haven't got time to figure out why SilverStripe thinks there's a parent ID involved,
+	 * so be gone with it.
+	 *
+	 * @return DataObjectSet
+	 */
+	public function getReports() {
+		return DataObject::get('FrontendReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
+	}
 }
 
 class ReportPage_Controller extends Page_Controller {
 	public static $allowed_actions = array(
 		'ReportForm',
+		'DeleteSavedReportForm',
 		'htmlpreview',
 	);
 
 	public function ReportForm() {
 		$template = $this->data()->ReportTemplate();
-		if ($template && $template->ID) {
+		if ($template && $template->ID && $this->data()->canEdit()) {
 			$fields = new FieldSet();
 			$template->updateReportFields($fields);
 
@@ -75,7 +83,25 @@ class ReportPage_Controller extends Page_Controller {
 			$form->addExtraClass('ReportForm');
 			return $form;
 		}
+
 		return null;
+	}
+
+	public function DeleteSavedReportForm() {
+		$fields = new FieldSet(
+			new HiddenField('ReportID')
+		);
+
+		return new Form($this, 'DeleteSavedReportForm', $fields, new FieldSet(new FormAction('deletereport', '')));
+	}
+
+	/**
+	 * OHHH sorry about this hack. 
+	 *
+	 * @return String
+	 */
+	public function SecurityID() {
+		return Session::get('SecurityID');
 	}
 
 	/**
@@ -86,7 +112,9 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request 
 	 */
 	public function save($data, Form $form, $request) {
-		$this->saveReportTemplate($data, $form);
+		if ($this->data()->canEdit()) {
+			$this->saveReportTemplate($data, $form);
+		}
 		$this->redirect($this->data()->Link());
 	}
 
@@ -113,7 +141,10 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function preview($data, Form $form, $request) {
-		$this->saveReportTemplate($data, $form);
+		if ($this->data()->canEdit()) {
+			$this->saveReportTemplate($data, $form);
+		}
+		
 		$this->redirect($this->data()->Link('htmlpreview'));
 	}
 
@@ -146,16 +177,39 @@ class ReportPage_Controller extends Page_Controller {
 		// okay if we're generating we need to do a few things
 		// 1. clone the current template as a saved version
 		// 2. create the actual files
+		if ($this->data()->canEdit()) {
+			$currentTemplate = $this->data()->ReportTemplate();
+			$report = $currentTemplate->duplicate(false);
+			$report->Title = $this->data()->Title . ' ' . date('Y-m-d');
+			$report->ReportID = $this->data()->ID;
+			$report->write();
 
-		$currentTemplate = $this->data()->ReportTemplate();
-		$report = $currentTemplate->duplicate(false);
-		$report->Title = $this->data()->Title . ' ' . date('Y-m-d');
-		$report->ReportID = $this->data()->ID;
-		$report->write();
+			$report->generateReport('html');
+			$report->generateReport('csv');
+			$report->generateReport('pdf');
+		}
 
-		$report->generateReport('html');
-		$report->generateReport('csv');
-		$report->generateReport('pdf');
+		$this->redirect($this->data()->Link());
+	}
+
+	/**
+	 * Delete a previously saved generated report
+	 *
+	 * @param array $data
+	 * @param Form $form
+	 * @param SS_HTTPRequest $request
+	 */
+	public function deletereport($data, $form, $request) {
+		if ($this->data()->canDelete()) {
+			$reportId = isset($data['ReportID']) ? $data['ReportID'] : null;
+			if ($reportId) {
+				$report = DataObject::get_by_id('FrontendReport', $reportId);
+				if ($report) {
+					$report->delete();
+				}
+			}
+		}
+		
 
 		$this->redirect($this->data()->Link());
 	}
