@@ -118,7 +118,7 @@ class FrontendReport extends DataObject {
 			$renderFormat = self::$conversion_formats[$format];
 		}
 
-		$template = get_class($this) . '_' . $renderFormat;
+		
 		$content = "Formatter for $format not found!";
 		$formatter = ucfirst($renderFormat).'ReportFormatter';
 		if (class_exists($formatter)) {
@@ -126,7 +126,18 @@ class FrontendReport extends DataObject {
 			$content = $formatter->format();
 		}
 
-		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format))->renderWith($template);
+		$classes = array_reverse(ClassInfo::ancestry(get_class($this)));
+		$templates = array();
+		foreach ($classes as $cls) {
+			if ($cls == 'FrontendReport') {
+				// catchall
+				$templates[] = 'FrontendReport';
+				break;
+			}
+			$templates[] = $cls . '_' . $renderFormat;
+		}
+
+		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format))->renderWith($templates);
 
 		if (!$convertTo) {
 			if ($store) {
