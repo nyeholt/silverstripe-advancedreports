@@ -40,7 +40,7 @@ class ReportPage extends Page {
 
 			// create the template first. This is what all actual reports are based on when they're generated, either
 			// automatically or by the 'generate' button
-			$template->Title = $this->Title . ' Template';
+			$template->Title = $this->Title . ' Preview';
 			$template->write();
 
 			$this->ReportTemplateID = $template->ID;
@@ -153,10 +153,12 @@ class ReportPage_Controller extends Page_Controller {
 	 */
 	public function htmlpreview() {
 		// create the HTML report and spit it out immediately
-		$output = $this->data()->ReportTemplate()->createReport();
+		$format = isset($_REQUEST['f']) ? $_REQUEST['f'] : 'html';
+		$output = $this->data()->ReportTemplate()->createReport($format);
 		if ($output->filename) {
 			// do nothing
 		}
+
 		if ($output->content) {
 			echo $output->content;
 		}

@@ -82,22 +82,24 @@ class FrontendReport extends DataObject {
 	 *				Whether to store the created report. 
 	 */
 	public function createReport($format='html', $store = false) {
+		Requirements::clear();
 		
 		$convertTo = null;
+		$renderFormat = $format;
 		if (isset(self::$conversion_formats[$format])) {
 			$convertTo = 'pdf';
-			$format = self::$conversion_formats[$format];
+			$renderFormat = self::$conversion_formats[$format];
 		}
 
-		$template = get_class($this) . '_' . $format;
+		$template = get_class($this) . '_' . $renderFormat;
 		$content = "Formatter for $format not found!";
-		$formatter = ucfirst($format).'ReportFormatter';
+		$formatter = ucfirst($renderFormat).'ReportFormatter';
 		if (class_exists($formatter)) {
 			$formatter = new $formatter($this);
 			$content = $formatter->format();
 		}
 
-		$output = $this->customise(array('ReportContent' => $content))->renderWith($template);
+		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format))->renderWith($template);
 
 		if (!$convertTo) {
 			if ($store) {
@@ -186,7 +188,7 @@ class FrontendReportOutput {
 	public $filename;
 	public $content;
 
-	public function __construct($content, $filename=null) {
+	public function __construct($content = null, $filename=null) {
 		$this->filename = $filename;
 		$this->content = $content;
 	}

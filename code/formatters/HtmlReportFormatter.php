@@ -52,6 +52,6 @@ class HtmlReportFormatter extends ReportFormatter {
 	 * Format the header and body into a complete report output.
 	 */
 	protected function formatReport($reportPieces) {
-		return '<table class="reportttable">'.$reportPieces['Header'].$reportPieces['Body'].'</table>';
+		return '<table class="reporttable">'.$reportPieces['Header'].$reportPieces['Body'].'</table>';
 	}
 }
