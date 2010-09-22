@@ -102,7 +102,7 @@ abstract class ReportFormatter {
 			foreach ($this->headers as $field => $display) {
 				$rawValue = is_object($item) ? $item->$field : $item[$field];
 
-				$value = '(no data)';
+				$value = '';
 
 				// based on the field name we've been given, lets
 				// see if we can resolve it to a value on our data object
@@ -123,7 +123,7 @@ abstract class ReportFormatter {
 
 						$previousVals[$field] = $value;
 					} else {
-						$row[$field] = ' ';
+						$row[$field] = '';
 					}
 				} else {
 					$row[$field] = $value;

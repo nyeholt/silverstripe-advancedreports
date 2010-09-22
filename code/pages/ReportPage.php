@@ -180,7 +180,10 @@ class ReportPage_Controller extends Page_Controller {
 		// 1. clone the current template as a saved version
 		// 2. create the actual files
 		if ($this->data()->canEdit()) {
+			$this->saveReportTemplate($data, $form);
+			
 			$currentTemplate = $this->data()->ReportTemplate();
+
 			$report = $currentTemplate->duplicate(false);
 			$report->Title = $this->data()->Title . ' ' . date('Y-m-d');
 			$report->ReportID = $this->data()->ID;
