@@ -52,16 +52,18 @@ class ReportHolder_Controller extends Page_Controller {
 		if ($this->data()->canEdit()) {
 			$type = $data['ReportType'];
 			$classes = ClassInfo::subclassesFor('FrontendReport');
-			if (in_array($type, $classes)) {
+			if (!in_array($type, $classes)) {
 				throw new Exception("Invalid report type");
 			}
 
-			$report = new $type;
+			$report = new ReportPage();
+
 			$report->Title = $data['ReportName'];
-			$report->Description = isset($data['ReportDescription']) ? $data['ReportDescription'] : '';
+			$report->MetaDescription = isset($data['ReportDescription']) ? $data['ReportDescription'] : '';
+			$report->ReportType = $type;
+			$report->ParentID = $this->data()->ID;
 			$report->write();
 			$report->doPublish();
-
 			$this->redirect($report->Link());
 		} else {
 			$form->sessionMessage(_t('ReporHolder.NO_PERMISSION', 'You do not have permission to do that'), 'warning');

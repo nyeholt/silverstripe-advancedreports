@@ -21,6 +21,11 @@ class FrontendReport extends DataObject {
     public static $db = array(
 		'Title' => 'Varchar(128)',
 		'Description' => 'Text',
+
+		'ReportFields' => 'MultiValueField',
+		'SortBy' => 'MultiValueField',
+		'SortDir' => 'MultiValueField',
+		'ClearColumns' => 'MultiValueField',
 	);
 
 	public static $has_one = array(
@@ -41,17 +46,41 @@ class FrontendReport extends DataObject {
 	 * @param FieldSet $fields
 	 */
 	public function updateReportFields($fields) {
-		
+		$reportFields = $this->getReportableFields();
+		$fields->push(new MultiValueDropdownField('ReportFields', _t('FrontendReport.REPORT_FIELDS', 'Report Fields'), $reportFields));
+
+		$combofield = new FieldGroup('Sorting',
+			new MultiValueDropdownField('SortBy', _t('FrontendReport.SORTED_BY', 'Sorted By'), $reportFields),
+			new MultiValueDropdownField('SortDir', _t('FrontendReport.SORT_DIRECTION', 'Sort Direction'), array('ASC' => _t('FrontendReport.ASC', 'Ascending'), 'DESC' => _t('FrontendReport.DESC', 'Descending')))
+		);
+
+		$fields->push($combofield);
+		$fields->push(new MultiValueDropdownField('ClearColumns', _t('FrontendReport.CLEARED_COLS', '"Cleared" columns'), $reportFields));
 	}
 
 	/**
-	 * Please override this in child classes!
+	 * Gets an array of field names that can be used in this report
 	 *
-	 * @return array
+	 * Override to specify your own values. 
+	 */
+	protected function getReportableFields() {
+		return array('Title' => 'Title');
+	}
+
+	/**
+	 * Return the 'included fields' list. 
+	 *
+	 * @return
 	 */
 	public function getHeaders() {
-		throw new Exception("Abstract method called; please implement getHeaders()");
+		$headers = array();
+		$reportFields = $this->getReportableFields();
+		foreach ($this->ReportFields->getValues() as $field) {
+			$headers[$field] = $reportFields[$field];
+		}
+		return $headers;
 	}
+
 
 	/**
 	 * Retrieve the raw data objects set for this report
@@ -65,9 +94,59 @@ class FrontendReport extends DataObject {
 	}
 
 	/**
-	 * Get any field formatting options.
+	 * Gets a string that represents the possible 'sort' options. 
 	 *
-	 * 
+	 * @return string 
+	 */
+	protected function getSort() {
+		$sortBy = '';
+		$sortVals = $this->SortBy->getValues();
+		$dirs = $this->SortDir->getValues();
+
+		$dir = 'ASC';
+
+		$reportFields = $this->getReportableFields();
+		$numericSort = $this->getNumericSortFields();
+
+		if (count($sortVals)) {
+			$sep = '';
+			$index = 0;
+			foreach ($sortVals as $sortOpt) {
+				// check we're not injecting an invalid sort
+				if (isset($reportFields[$sortOpt])) {
+					// update the dir to match, if available, otherwise just use the last one
+					if (isset($dirs[$index])) {
+						if (in_array($dirs[$index], array('ASC', 'DESC'))) {
+							$dir = $dirs[$index];
+						}
+					}
+
+					// see http://blog.feedmarker.com/2006/02/01/how-to-do-natural-alpha-numeric-sort-in-mysql/
+					// for why we're + 0 here. Basically, coercing an alphanum sort instead of straight string
+					if (in_array($sortOpt, $numericSort)) {
+						$sortOpt .= '+ 0';
+					}
+					$sortBy .= $sep . $sortOpt . ' ' . $dir;
+					$sep = ', ';
+				}
+				$index++;
+			}
+		} else {
+			$sortBy = 'ID '.$dir;
+		}
+
+		return $sortBy;
+	}
+
+	/**
+	 * Return any fields that need special 'numeric' sorting
+	 */
+	protected function getNumericSortFields() {
+		return array();
+	}
+
+	/**
+	 * Get any field formatting options.
 	 */
 	public function getFieldFormats() {
 		return array();
@@ -83,6 +162,9 @@ class FrontendReport extends DataObject {
 	 * has the same value as current is blanked out. 
 	 */
 	public function getDuplicatedBlankingFields() {
+		if ($this->ClearColumns && $this->ClearColumns->getValues()) {
+			return $this->ClearColumns->getValues();
+		}
 		return array();
 	}
 
