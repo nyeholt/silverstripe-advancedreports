@@ -25,7 +25,6 @@ class ReportPage extends Page {
 		array_shift($types);
 		array_unshift($types, '');
 		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ReportType', _t('FrontendReport.REPORT_TYPE', 'Report Type'), $types), 'Content');
-
 		return $fields;
 	}
 
@@ -64,6 +63,7 @@ class ReportPage_Controller extends Page_Controller {
 		'ReportForm',
 		'DeleteSavedReportForm',
 		'htmlpreview',
+		'delete',
 	);
 
 	public function ReportForm() {
@@ -75,7 +75,8 @@ class ReportPage_Controller extends Page_Controller {
 			$actions = new FieldSet(
 				new FormAction('save', _t('FrontendReports.SAVE', 'Save')),
 				new FormAction('preview', _t('FrontendReports.PREVIEW', 'Preview')),
-				new FormAction('generate', _t('FrontendReports.GENERATE', 'Generate'))
+				new FormAction('generate', _t('FrontendReports.GENERATE', 'Generate')),
+				new FormAction('delete', _t('FrontendReports.DELETE', 'Delete'))
 			);
 
 			$form = new Form($this, 'ReportForm', $fields, $actions);
@@ -195,6 +196,25 @@ class ReportPage_Controller extends Page_Controller {
 		}
 
 		$this->redirect($this->data()->Link());
+	}
+
+	/**
+	 * Delete an actual report page.
+	 *
+	 * @param array $data
+	 * @param Form $form
+	 * @param SS_HTTPRequest $request
+	 */
+	public function delete($data, $form, $request) {
+		if ($this->data()->canDelete() && false) {
+			$parent = $this->data()->Parent();
+			$this->data()->doUnpublish();
+			$this->data()->delete();
+			$this->redirect($parent->Link());
+		} else {
+			$form->sessionMessage(_t('ReportPage.DELETE_WARNING', 'You do not have permission to delete the report'), 'warning');
+			$this->redirect($this->data()->Link());
+		}
 	}
 
 	/**
