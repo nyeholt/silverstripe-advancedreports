@@ -68,6 +68,20 @@ class FrontendReport extends DataObject {
 	}
 
 	/**
+	 * Converts a field in dotted notation (as used in some report selects) to a unique name
+	 * that can be used for, eg "Table.Field AS Table_Field" so that we don't have problems with
+	 * duplicity in queries, and mapping them back and forth
+	 *
+	 * We keep this as a method to ensure that we're explicity as to what/why we're doing
+	 * this so that when someone comes along later, it's not toooo wtfy
+	 *
+	 * @param string $field
+	 */
+	protected function dottedFieldToUnique($field) {
+		return str_replace('.', '_', $field);
+	}
+
+	/**
 	 * Return the 'included fields' list. 
 	 *
 	 * @return
@@ -75,10 +89,33 @@ class FrontendReport extends DataObject {
 	public function getHeaders() {
 		$headers = array();
 		$reportFields = $this->getReportableFields();
-		foreach ($this->ReportFields->getValues() as $field) {
-			$headers[$field] = $reportFields[$field];
+		$sel = $this->ReportFields->getValues();
+		foreach ($sel as $field) {
+			$fieldName = $this->dottedFieldToUnique($field);
+			$headers[$fieldName] = $reportFields[$field];
 		}
 		return $headers;
+	}
+
+	/**
+	 * Get the selected report fields in a format suitable to be put in an
+	 * SQL select (an array format)
+	 *
+	 * @return array
+	 */
+	protected function getReportFieldsForQuery() {
+		$fields = $this->ReportFields->getValues();
+		$reportFields = $this->getReportableFields();
+		$toSelect = array();
+		foreach ($fields as $field) {
+			if (isset($reportFields[$field])) {
+				if (strpos($field, '.')) {
+					$field = $field . ' AS ' . $this->dottedFieldToUnique($field);
+				}
+				$toSelect[] = $field;
+			}
+		}
+		return $toSelect;
 	}
 
 
@@ -120,6 +157,8 @@ class FrontendReport extends DataObject {
 							$dir = $dirs[$index];
 						}
 					}
+
+					$sortOpt = $this->dottedFieldToUnique($sortOpt);
 
 					// see http://blog.feedmarker.com/2006/02/01/how-to-do-natural-alpha-numeric-sort-in-mysql/
 					// for why we're + 0 here. Basically, coercing an alphanum sort instead of straight string
@@ -163,7 +202,15 @@ class FrontendReport extends DataObject {
 	 */
 	public function getDuplicatedBlankingFields() {
 		if ($this->ClearColumns && $this->ClearColumns->getValues()) {
-			return $this->ClearColumns->getValues();
+			$fields = $this->ClearColumns->getValues();
+			$ret = array();
+			foreach ($fields as $field) {
+				if (strpos($field, '.')) {
+					$field = $this->dottedFieldToUnique($field);
+				}
+				$ret[] = $field;
+			}
+			return $ret;
 		}
 		return array();
 	}
@@ -171,8 +218,8 @@ class FrontendReport extends DataObject {
 	/**
 	 * Get the mappings to be used for values of this report.
 	 *
-	 * This is an array of field names to mappings - basically, the same code as TableListField
-	 * setFieldMapping
+	 * This is an array of field names to mappings - where the mapping is evaluated as PHP code. Use '$rawValue'
+	 * in your mapping to refer to the raw field value. 
 	 *
 	 * array(
 	 *		'FieldName' => 'Mapping'
