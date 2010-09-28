@@ -18,11 +18,16 @@ class FrontendReport extends DataObject {
 	 */
 	public static $conversion_formats = array('pdf' => 'html');
 
+	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List');
+
     public static $db = array(
 		'Title' => 'Varchar(128)',
 		'Description' => 'Text',
 
 		'ReportFields' => 'MultiValueField',
+		'ConditionFields' => 'MultiValueField',
+		'ConditionOps' => 'MultiValueField',
+		'ConditionValues' => 'MultiValueField',
 		'SortBy' => 'MultiValueField',
 		'SortDir' => 'MultiValueField',
 		'ClearColumns' => 'MultiValueField',
@@ -49,12 +54,22 @@ class FrontendReport extends DataObject {
 		$reportFields = $this->getReportableFields();
 		$fields->push(new MultiValueDropdownField('ReportFields', _t('FrontendReport.REPORT_FIELDS', 'Report Fields'), $reportFields));
 
+		$conditions = new FieldGroup('Conditions', 
+			new MultiValueDropdownField('ConditionFields', _t('FrontendReport.CONDITION_FIELDS', 'Condition Fields'), $reportFields),
+			new MultiValueDropdownField('ConditionOps', _t('FrontendReport.CONDITION_OPERATIONS', 'Op'), self::$allowed_conditions),
+			new MultiValueTextField('ConditionValues', _t('FrontendReport.CONDITION_VALUES', 'Value'))
+		);
+
+		$fields->push($conditions);
+
 		$combofield = new FieldGroup('Sorting',
 			new MultiValueDropdownField('SortBy', _t('FrontendReport.SORTED_BY', 'Sorted By'), $reportFields),
 			new MultiValueDropdownField('SortDir', _t('FrontendReport.SORT_DIRECTION', 'Sort Direction'), array('ASC' => _t('FrontendReport.ASC', 'Ascending'), 'DESC' => _t('FrontendReport.DESC', 'Descending')))
 		);
 
 		$fields->push($combofield);
+
+
 		$fields->push(new MultiValueDropdownField('ClearColumns', _t('FrontendReport.CLEARED_COLS', '"Cleared" columns'), $reportFields));
 	}
 
@@ -129,6 +144,57 @@ class FrontendReport extends DataObject {
 	public function getDataObjects() {
 		throw new Exception("Abstract method called; please implement getDataObjects()");
 	}
+
+
+	/**
+	 * Generate a WHERE clause based on the input the user provided.
+	 *
+	 * Assumes the user has provided some values for the $this->ConditionFields etc. Converts
+	 * everything to an array that is run through the dbQuote() util method that handles all the
+	 * escaping
+	 */
+	protected function getConditions() {
+		$reportFields = $this->getReportableFields();
+		$fields = $this->ConditionFields->getValues();
+		if (!$fields || !count($fields)) {
+			return '';
+		}
+
+		$ops = $this->ConditionOps->getValues();
+		$vals = $this->ConditionValues->getValues();
+
+		$index = 0;
+		$filter = array();
+		foreach ($fields as $field) {
+			if (!$ops[$index] || !$vals[$index]) {
+				break;
+			}
+
+			$op = $ops[$index];
+			if (!isset(self::$allowed_conditions[$op])) {
+				break;
+			}
+
+			$val = $vals[$index];
+
+			if ($op == 'IN') {
+				$val = explode(',', $val);
+			}
+
+//			if (is_int($val)) {
+//				$val = (int) $val;
+//			} else if (is_double($val)) {
+//				$val = (double) $val;
+//			}
+
+
+
+			$filter[$field . ' ' . $op] = $val;
+		}
+
+		return singleton('FRUtils')->dbQuote($filter);
+	}
+
 
 	/**
 	 * Gets a string that represents the possible 'sort' options. 

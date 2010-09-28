@@ -62,20 +62,7 @@ class FRUtils {
 				list($field, $operator) = explode(' ', trim($field));
 			}
 
-			if (is_array($value)) {
-				// quote each individual one into a string
-				$ins = '';
-				$insep = '';
-				foreach ($value as $v) {
-					$ins .= $insep . Convert::raw2sql($v);
-					$insep = ',';
-				}
-				$value = '('.$ins.')';
-			} else if (is_null($value)) {
-				$value = 'NULL';
-			} else if (is_string($field)) {
-				$value = "'" . Convert::raw2sql($value) . "'";
-			}
+			$value = $this->recursiveQuote($value);
 
 			if (strpos($field, '.')) {
 				list($tb, $fl) = explode('.', $field);
@@ -92,6 +79,29 @@ class FRUtils {
 		}
 
 		return $string;
+	}
+
+	protected function recursiveQuote($val) {
+		if (is_array($val)) {
+			$return = array();
+			foreach ($val as $v) {
+				$return[] = $this->recursiveQuote($v);
+			}
+			
+			return '('.implode(',', $return).')';
+		} else if (is_null($val)) {
+			$val = 'NULL';
+		} else if (is_int($val)) {
+			$val = (int) $val;
+		} else if (is_double($val)) {
+			$val = (double) $val;
+		} else if (is_float($val)) {
+			$val = (float) $val;
+		} else {
+			$val = "'" . Convert::raw2sql($val) . "'";
+		}
+
+		return $val;
 	}
 
 	function log($message, $level=null) {
