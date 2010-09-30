@@ -1,0 +1,25 @@
+
+#ReportFormLeft { float: left; width: 300px; }
+#ReportFormRight { margin-left: 305px;}
+
+.reportData a[href$=".pdf"] { padding-left: 20px; background: url(images/page_white_acrobat.png) no-repeat left center; }
+.reportData a[href$=".csv"] { padding-left: 20px; background: url(images/page_excel.png) no-repeat left center; }
+.reportData a[href$=".html"] { padding-left: 20px; background: url(images/html.png) no-repeat left center; }
+
+.ReportForm select { width: 150px; } /* Separate lines because ie6 is a horrendous piece of garbage */
+.ReportForm input[type=text] { width: 150px; }
+
+.ReportForm .reportMultiField { overflow: auto; }
+.ReportForm .reportMultiField .fieldgroup label { display: none; }
+.ReportForm .reportMultiField .fieldgroupField { width: 160px; float: left; }
+.ReportForm .mvlistbox { height: 200px; }
+
+#ReportList .reportPreviewLink { float: right;  padding-left: 18px; background: transparent url('images/html.png') no-repeat; }
+#ReportList { width: 60%; list-style-type: none; background-color: #EAECEE; padding: 1em; }
+#ReportList .reportTitle { font-size: 14pt; text-decoration: none; }
+
+#ReportList li {padding: 0.5em; }
+#ReportList li.even { background: #fff; }
+#ReportList li.odd { background: #f2f6f9; }
+
+.newReportForm {padding: 1em; background-color: #EAECEE;  width: 60%}

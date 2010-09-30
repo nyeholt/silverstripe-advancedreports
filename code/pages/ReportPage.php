@@ -66,6 +66,13 @@ class ReportPage_Controller extends Page_Controller {
 		'delete',
 	);
 
+	public function init() {
+		parent::init();
+		Requirements::themedCSS('ReportPage');
+		Requirements::javascript('advancedreports/javascript/advancedreports.js');
+
+	}
+
 	public function ReportForm() {
 		$template = $this->data()->ReportTemplate();
 		if ($template && $template->ID && $this->data()->canEdit()) {

@@ -68,6 +68,7 @@ class AdvancedReport extends DataObject {
 			new MultiValueTextField('ReportHeaders', _t('AdvancedReport.REPORT_HEADERS', 'Headers'))
 		);
 
+		$fieldsGroup->addExtraClass('reportMultiField');
 		$fields->push($fieldsGroup);
 
 		$conditions = new FieldGroup('Conditions', 
@@ -75,12 +76,14 @@ class AdvancedReport extends DataObject {
 			new MultiValueDropdownField('ConditionOps', _t('AdvancedReport.CONDITION_OPERATIONS', 'Op'), self::$allowed_conditions),
 			new MultiValueTextField('ConditionValues', _t('AdvancedReport.CONDITION_VALUES', 'Value'))
 		);
+		$conditions->addExtraClass('reportMultiField');
 		$fields->push($conditions);
 		
 		$combofield = new FieldGroup('Sorting',
 			new MultiValueDropdownField('SortBy', _t('AdvancedReport.SORTED_BY', 'Sorted By'), $reportFields),
 			new MultiValueDropdownField('SortDir', _t('AdvancedReport.SORT_DIRECTION', 'Sort Direction'), array('ASC' => _t('AdvancedReport.ASC', 'Ascending'), 'DESC' => _t('AdvancedReport.DESC', 'Descending')))
 		);
+		$combofield->addExtraClass('reportMultiField');
 		$fields->push($combofield);
 
 		$paginateFields = $reportFields;
@@ -125,9 +128,11 @@ class AdvancedReport extends DataObject {
 		$headers = array();
 		$reportFields = $this->getReportableFields();
 		$sel = $this->ReportFields->getValues();
-		foreach ($sel as $field) {
+		$headerTitles = $this->ReportHeaders->getValues();
+		for ($i = 0, $c = count($sel); $i < $c; $i++) {
+			$field = $sel[$i];
 			$fieldName = $this->dottedFieldToUnique($field);
-			$headers[$fieldName] = $reportFields[$field];
+			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : $reportFields[$field];
 		}
 		return $headers;
 	}
