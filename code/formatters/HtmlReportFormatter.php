@@ -10,7 +10,7 @@ class HtmlReportFormatter extends ReportFormatter {
 	/**
 	 * Create a header for the report
 	 */
-	protected function createHeader() {
+	protected function createHeader($tableName) {
 		$header = array();
 		// just join it all up
 		$header[] = '<thead><tr>';
@@ -25,12 +25,12 @@ class HtmlReportFormatter extends ReportFormatter {
 	/**
 	 * Create a body for the report
 	 */
-	protected function createBody() {
+	protected function createBody($tableName, $tableData) {
 		$body = array();
 		$body[] = '<tbody>';
 
 		$rowNum = 1;
-		foreach ($this->data as $row) {
+		foreach ($tableData as $row) {
 			$oddEven = $rowNum % 2 == 0 ? 'even' : 'odd';
 			$body[] = '<tr class="reportrow '.$oddEven.'">';
 			foreach ($row as $field => $value) {
@@ -54,6 +54,13 @@ class HtmlReportFormatter extends ReportFormatter {
 	 * Format the header and body into a complete report output.
 	 */
 	protected function formatReport($reportPieces) {
-		return '<table class="reporttable">'.$reportPieces['Header'].$reportPieces['Body'].'</table>';
+		$bits = '';
+		foreach ($reportPieces as $tableName => $table) {
+			if ($tableName != ReportFormatter::DEFAULT_TABLE_NAME) {
+				$bits .= '<h2 class="reportTableName">'.$tableName."</h2>\n";
+			}
+			$bits .=  '<table class="reporttable">'.$table['Header'].$table['Body'].'</table>'."\n\n";
+		}
+		return $bits;
 	}
 }

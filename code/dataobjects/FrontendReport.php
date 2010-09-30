@@ -3,8 +3,14 @@
 /**
  * A representation of a report in the system
  *
- * Note that this class is abstract, but SilverStripe means it can't be declared
- * as such.
+ * Provides several fields for specifying basic parameters of reports,
+ * and functionality for (relatively) simply building an SQL query for
+ * retrieving the report data.
+ *
+ * A ReportPage makes use of a reportformatter to actually generate the
+ * report that gets displayed to the user; this report formatter uses
+ * one of these frontendreport objects to actually get all the relevant
+ * information to be displayed. 
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
@@ -23,14 +29,16 @@ class FrontendReport extends DataObject {
     public static $db = array(
 		'Title' => 'Varchar(128)',
 		'Description' => 'Text',
-
 		'ReportFields' => 'MultiValueField',
 		'ConditionFields' => 'MultiValueField',
 		'ConditionOps' => 'MultiValueField',
 		'ConditionValues' => 'MultiValueField',
+		'PaginateBy' => 'Varchar(64)',						// a field used to separate tables (eg financial years)
 		'SortBy' => 'MultiValueField',
 		'SortDir' => 'MultiValueField',
 		'ClearColumns' => 'MultiValueField',
+		'AddInRows' => 'MultiValueField',					// which fields in each row should be added?
+		'AddCols' => 'MultiValueField'						// Which columns should be added ?
 	);
 
 	public static $has_one = array(
@@ -59,16 +67,21 @@ class FrontendReport extends DataObject {
 			new MultiValueDropdownField('ConditionOps', _t('FrontendReport.CONDITION_OPERATIONS', 'Op'), self::$allowed_conditions),
 			new MultiValueTextField('ConditionValues', _t('FrontendReport.CONDITION_VALUES', 'Value'))
 		);
-
 		$fields->push($conditions);
 
+		
 		$combofield = new FieldGroup('Sorting',
 			new MultiValueDropdownField('SortBy', _t('FrontendReport.SORTED_BY', 'Sorted By'), $reportFields),
 			new MultiValueDropdownField('SortDir', _t('FrontendReport.SORT_DIRECTION', 'Sort Direction'), array('ASC' => _t('FrontendReport.ASC', 'Ascending'), 'DESC' => _t('FrontendReport.DESC', 'Descending')))
 		);
-
 		$fields->push($combofield);
 
+		$paginateFields = $reportFields;
+		array_unshift($paginateFields, '');
+		$fields->push(new DropdownField('PaginateBy', _t('FrontendReport.PAGINATE_BY', 'Paginate By'), $paginateFields));
+
+		$fields->push(new MultiValueDropdownField('AddInRows', _t('FrontendReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields));
+		$fields->push(new MultiValueDropdownField('AddCols', _t('FrontendReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields));
 
 		$fields->push(new MultiValueDropdownField('ClearColumns', _t('FrontendReport.CLEARED_COLS', '"Cleared" columns'), $reportFields));
 	}
@@ -119,6 +132,7 @@ class FrontendReport extends DataObject {
 	 * @return array
 	 */
 	protected function getReportFieldsForQuery() {
+
 		$fields = $this->ReportFields->getValues();
 		$reportFields = $this->getReportableFields();
 		$toSelect = array();

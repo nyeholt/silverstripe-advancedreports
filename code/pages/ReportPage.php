@@ -72,6 +72,8 @@ class ReportPage_Controller extends Page_Controller {
 			$fields = new FieldSet();
 			$template->updateReportFields($fields);
 
+			$fields->push(new TextField('Title', _t('ReportPage.NEW_TITLE', 'Title for generated reports')));
+
 			$actions = new FieldSet(
 				new FormAction('save', _t('FrontendReports.SAVE', 'Save')),
 				new FormAction('preview', _t('FrontendReports.PREVIEW', 'Preview')),
@@ -186,7 +188,7 @@ class ReportPage_Controller extends Page_Controller {
 			$currentTemplate = $this->data()->ReportTemplate();
 
 			$report = $currentTemplate->duplicate(false);
-			$report->Title = $this->data()->Title . ' ' . date('Y-m-d');
+//			$report->Title = isset($data['ReportTitle']) ? $data['ReportTitle'] : $this->data()->Title . ' ' . date('Y-m-d');
 			$report->ReportID = $this->data()->ID;
 			$report->write();
 

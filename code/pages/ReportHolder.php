@@ -16,6 +16,16 @@ class ReportHolder extends Page {
 }
 
 class ReportHolder_Controller extends Page_Controller {
+
+	public function index() {
+		if (Versioned::current_stage() == 'Stage') {
+			$this->redirect($this->data()->Link().'?stage=Live');
+			return;
+		}
+
+		return array();
+	}
+
 	public function Form() {
 		if ($this->data()->canEdit()) {
 			$classes = ClassInfo::subclassesFor('FrontendReport');
@@ -62,9 +72,14 @@ class ReportHolder_Controller extends Page_Controller {
 			$report->MetaDescription = isset($data['ReportDescription']) ? $data['ReportDescription'] : '';
 			$report->ReportType = $type;
 			$report->ParentID = $this->data()->ID;
+
+			$oldMode = Versioned::get_reading_mode();
+			Versioned::reading_stage('Stage');
 			$report->write();
 			$report->doPublish();
+			Versioned::reading_stage('Live');
 			$this->redirect($report->Link());
+			
 		} else {
 			$form->sessionMessage(_t('ReporHolder.NO_PERMISSION', 'You do not have permission to do that'), 'warning');
 			$this->redirect($this->data()->Link());

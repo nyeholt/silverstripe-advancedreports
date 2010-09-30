@@ -9,7 +9,7 @@ class CsvReportFormatter extends ReportFormatter {
 	/**
 	 * Create a header for the report
 	 */
-	protected function createHeader() {
+	protected function createHeader($tableName) {
 		$header = array();
 		// just join it all up
 		foreach ($this->headers as $field => $display) {
@@ -22,10 +22,10 @@ class CsvReportFormatter extends ReportFormatter {
 	/**
 	 * Create a body for the report
 	 */
-	protected function createBody() {
+	protected function createBody($tableName, $tableData) {
 		$body = array();
 
-		foreach ($this->data as $row) {
+		foreach ($tableData as $row) {
 			$csvRow = array();
 			foreach ($row as $field => $value) {
 				$csvRow[] = $value;
@@ -40,6 +40,14 @@ class CsvReportFormatter extends ReportFormatter {
 	 * Format the header and body into a complete report output.
 	 */
 	protected function formatReport($reportPieces) {
-		return $reportPieces['Header']."\n".$reportPieces['Body'];
+		$bits = '';
+
+		foreach ($reportPieces as $tableName => $table) {
+			if ($tableName != ReportFormatter::DEFAULT_TABLE_NAME) {
+				$bits .= '"'.$tableName.'",';
+			}
+			$bits .=  $table['Header']."\n".$table['Body']."\n,\n,\n";
+		}
+		return $bits;
 	}
 }
