@@ -23,7 +23,7 @@ abstract class ReportFormatter {
 	/**
 	 * The report we're formatting
 	 *
-	 * @var FrontendReport
+	 * @var AdvancedReport
 	 */
 	protected $report;
 
@@ -54,9 +54,9 @@ abstract class ReportFormatter {
 	/**
 	 * Create a new report formatter for the given report
 	 *
-	 * @param FrontendReport $report
+	 * @param AdvancedReport $report
 	 */
-	public function __construct(FrontendReport $report) {
+	public function __construct(AdvancedReport $report) {
 		$this->report = $report;
 		$this->headers = $report->getHeaders();
 
@@ -118,6 +118,7 @@ abstract class ReportFormatter {
 		$tableName = self::DEFAULT_TABLE_NAME;
 
 		$paginateBy = $this->report->PaginateBy;
+		$headerTemplate = $this->report->PageHeader ? $this->report->PageHeader : '$name';
 
 		$addCols = $this->report->AddInRows && count($this->report->AddInRows->getValues()) ? $this->report->AddInRows->getValues() : null;
 
@@ -128,7 +129,7 @@ abstract class ReportFormatter {
 			if ($paginateBy) {
 				$pageVar = is_object($item) ? $item->$paginateBy : $item[$paginateBy];
 				if ($pageVar) {
-					$tableName = $pageVar;
+					$tableName = str_replace('$name', $pageVar, $headerTemplate);
 				} else {
 					$tableName = sprintf(_t('ReportFormatter.NO_PAGINATE_VALUE', 'No %s'), $paginateBy);
 				}

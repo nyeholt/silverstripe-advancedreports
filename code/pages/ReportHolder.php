@@ -28,7 +28,7 @@ class ReportHolder_Controller extends Page_Controller {
 
 	public function Form() {
 		if ($this->data()->canEdit()) {
-			$classes = ClassInfo::subclassesFor('FrontendReport');
+			$classes = ClassInfo::subclassesFor('AdvancedReport');
 			array_shift($classes);
 			//array_unshift($classes, '');
 
@@ -61,7 +61,7 @@ class ReportHolder_Controller extends Page_Controller {
 		// @TODO have a new create permission here?
 		if ($this->data()->canEdit()) {
 			$type = $data['ReportType'];
-			$classes = ClassInfo::subclassesFor('FrontendReport');
+			$classes = ClassInfo::subclassesFor('AdvancedReport');
 			if (!in_array($type, $classes)) {
 				throw new Exception("Invalid report type");
 			}

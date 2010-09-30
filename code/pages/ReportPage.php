@@ -16,15 +16,15 @@ class ReportPage extends Page {
 	);
 
 	public static $has_one = array(
-		'ReportTemplate' => 'FrontendReport',
+		'ReportTemplate' => 'AdvancedReport',
 	);
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$types = ClassInfo::subclassesFor('FrontendReport');
+		$types = ClassInfo::subclassesFor('AdvancedReport');
 		array_shift($types);
 		array_unshift($types, '');
-		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ReportType', _t('FrontendReport.REPORT_TYPE', 'Report Type'), $types), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ReportType', _t('AdvancedReport.REPORT_TYPE', 'Report Type'), $types), 'Content');
 		return $fields;
 	}
 
@@ -47,14 +47,14 @@ class ReportPage extends Page {
 	}
 
 	/**
-	 * This is needed because a has_many to frontendreport seems to think it needs
+	 * This is needed because a has_many to AdvancedReport seems to think it needs
 	 * a parent ID. I haven't got time to figure out why SilverStripe thinks there's a parent ID involved,
 	 * so be gone with it.
 	 *
 	 * @return DataObjectSet
 	 */
 	public function getReports() {
-		return DataObject::get('FrontendReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
+		return DataObject::get('AdvancedReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
 	}
 }
 
@@ -75,10 +75,10 @@ class ReportPage_Controller extends Page_Controller {
 			$fields->push(new TextField('Title', _t('ReportPage.NEW_TITLE', 'Title for generated reports')));
 
 			$actions = new FieldSet(
-				new FormAction('save', _t('FrontendReports.SAVE', 'Save')),
-				new FormAction('preview', _t('FrontendReports.PREVIEW', 'Preview')),
-				new FormAction('generate', _t('FrontendReports.GENERATE', 'Generate')),
-				new FormAction('delete', _t('FrontendReports.DELETE', 'Delete'))
+				new FormAction('save', _t('AdvancedReports.SAVE', 'Save')),
+				new FormAction('preview', _t('AdvancedReports.PREVIEW', 'Preview')),
+				new FormAction('generate', _t('AdvancedReports.GENERATE', 'Generate')),
+				new FormAction('delete', _t('AdvancedReports.DELETE', 'Delete'))
 			);
 
 			$form = new Form($this, 'ReportForm', $fields, $actions);
@@ -208,7 +208,7 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function delete($data, $form, $request) {
-		if ($this->data()->canDelete() && false) {
+		if ($this->data()->canDelete()) {
 			$parent = $this->data()->Parent();
 			$this->data()->doUnpublish();
 			$this->data()->delete();
@@ -230,7 +230,7 @@ class ReportPage_Controller extends Page_Controller {
 		if ($this->data()->canDelete()) {
 			$reportId = isset($data['ReportID']) ? $data['ReportID'] : null;
 			if ($reportId) {
-				$report = DataObject::get_by_id('FrontendReport', $reportId);
+				$report = DataObject::get_by_id('AdvancedReport', $reportId);
 				if ($report) {
 					$report->delete();
 				}
