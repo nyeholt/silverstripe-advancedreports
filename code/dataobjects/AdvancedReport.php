@@ -350,7 +350,9 @@ class AdvancedReport extends DataObject {
 			$templates[] = $cls . '_' . $renderFormat;
 		}
 
-		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format))->renderWith($templates);
+		$date = DBField::create('SS_Datetime', time());
+		$this->Text = nl2br($this->Text);
+		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format, 'Now' => $date))->renderWith($templates);
 
 		if (!$convertTo) {
 			if ($store) {

@@ -16,6 +16,10 @@ class ReportHolder extends Page {
 }
 
 class ReportHolder_Controller extends Page_Controller {
+	public function init() {
+		parent::init();
+		Requirements::themedCSS('ReportPage');
+	}
 
 	public function index() {
 		if (Versioned::current_stage() == 'Stage') {
