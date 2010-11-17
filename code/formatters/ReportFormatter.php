@@ -122,6 +122,11 @@ abstract class ReportFormatter {
 
 		$addCols = $this->report->AddInRows && count($this->report->AddInRows->getValues()) ? $this->report->AddInRows->getValues() : null;
 
+		if (!$dataObjects) {
+			$this->data[$tableName] = array();
+			return;
+		}
+
 		foreach ($dataObjects as $item) {
 
 			// lets check to see whether this item has the paginate variable, if so we want to be
