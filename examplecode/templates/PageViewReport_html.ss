@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<% base_tag %>
-		<% require css(themes/coag/css/reports.css) %>
+		<% require css(advancedreports/css/html-report.css) %>
 	</head>
 	<body>
 		<div id="PrintCoverPage">

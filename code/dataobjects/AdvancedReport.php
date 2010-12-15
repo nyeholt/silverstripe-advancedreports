@@ -403,7 +403,10 @@ class AdvancedReport extends DataObject {
 		$field = strtoupper($format).'FileID';
 		$storeIn = $this->getReportFolder();
 
-		$name = $this->Title . '.' . $format;
+		// SS hates spaces in here :(
+		$name = ereg_replace(' +','-',trim($this->Title));
+		$name = ereg_replace('[^A-Za-z0-9.+_\-]','',$name);
+		$name = $name . '.' . $format;
 		
 		$childId = $storeIn->constructChild($name);
 		$file = DataObject::get_by_id('File', $childId);
@@ -434,7 +437,7 @@ class AdvancedReport extends DataObject {
 		if (!$id) {
 			$id = 'preview';
 		}
-		$folderName = 'frontend-reports/'.$this->ReportID.'/'.$this->ID;
+		$folderName = 'advanced-reports/'.$this->ReportID.'/'.$this->ID;
 		return Folder::findOrMake($folderName);
 	}
 }

@@ -5,6 +5,7 @@
 .reportData a[href$=".pdf"] { padding-left: 20px; background: url(images/page_white_acrobat.png) no-repeat left center; }
 .reportData a[href$=".csv"] { padding-left: 20px; background: url(images/page_excel.png) no-repeat left center; }
 .reportData a[href$=".html"] { padding-left: 20px; background: url(images/html.png) no-repeat left center; }
+.reportData td { padding: 3px;}
 
 .ReportForm select { width: 120px; } /* Separate lines because ie6 is a horrendous piece of garbage */
 .ReportForm input[type=text] { width: 120px; }

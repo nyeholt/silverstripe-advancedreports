@@ -30,6 +30,7 @@ class PageViewReport extends AdvancedReport {
 			'ViewDay' => 'ViewDay',
 			'ViewYear' => 'ViewYear',
 			'PageName' => 'PageName',
+			'Created' => 'Created',
 			'ViewNum' => 'ViewNum',
 		);
 	}
