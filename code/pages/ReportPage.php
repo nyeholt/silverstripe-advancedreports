@@ -69,6 +69,8 @@ class ReportPage_Controller extends Page_Controller {
 	public function init() {
 		parent::init();
 		Requirements::themedCSS('ReportPage');
+		Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js');
+		Requirements::javascript(THIRDPARTY_DIR.'/jquery-livequery/jquery.livequery.js');
 		Requirements::javascript('advancedreports/javascript/advancedreports.js');
 
 	}

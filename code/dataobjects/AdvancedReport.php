@@ -262,16 +262,18 @@ class AdvancedReport extends DataObject {
 	}
 
 	/**
-	 * Return any fields that need special 'numeric' sorting
+	 * Return any fields that need special 'numeric' sorting. This allows sorting of numbers
+	 * in strings, so that
+	 * 
+	 * 1-document.txt
+	 * 2-document.txt
+	 * 11-document.txt 
+	 * 
+	 * are sorted in their correct order, and the '11' document doesn't come immediately
+	 * after the '1' document. 
+	 * 
 	 */
 	protected function getNumericSortFields() {
-		return array();
-	}
-
-	/**
-	 * Get any field formatting options.
-	 */
-	public function getFieldFormats() {
 		return array();
 	}
 
@@ -299,15 +301,21 @@ class AdvancedReport extends DataObject {
 		return array();
 	}
 
+
 	/**
-	 * Get the mappings to be used for values of this report.
-	 *
-	 * This is an array of field names to mappings - where the mapping is evaluated as PHP code. Use '$rawValue'
-	 * in your mapping to refer to the raw field value. 
-	 *
+	 * Get any field mapping options.
+	 * 
+	 * These should be of the form
+	 * 
+	 * <pre>
 	 * array(
-	 *		'FieldName' => 'Mapping'
+	 *		'FieldName' => 'functioncall($rawValue)'
 	 * );
+	 * </pre>
+	 * 
+	 * The value of the array will be eval'd with the $rawValue available for
+	 * formatting the default value.
+	 * 
 	 */
 	public function getFieldMapping() {
 		return array();
@@ -331,7 +339,6 @@ class AdvancedReport extends DataObject {
 			$renderFormat = self::$conversion_formats[$format];
 		}
 
-		
 		$content = "Formatter for $format not found!";
 		$formatter = ucfirst($renderFormat).'ReportFormatter';
 		if (class_exists($formatter)) {
