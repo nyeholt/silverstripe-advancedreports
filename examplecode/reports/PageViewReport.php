@@ -73,4 +73,21 @@ class PageViewReport extends AdvancedReport {
 
 		return $where;
 	}
+
+	/**
+	 * Overwrites SiteTree.getCMSFields.
+	 *
+	 * This method creates a customised CMS form for back-end user.
+	 *
+	 * @return fieldset
+	 */ 
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
+
+		$fields->removeFieldsFromTab("Root.Main", array(
+			"Pages",
+		));
+		
+		return $fields;
+	}
 }

@@ -43,6 +43,15 @@ class AdvancedReport extends DataObject {
 		'AddCols' => 'MultiValueField'						// Which columns should be added ?
 	);
 
+	static $field_labels = array(
+		'ReportFields' => 'Fields',
+		'ReportHeaders' => 'Field Headers',
+		'ConditionFields' => 'Conditions',
+		'PaginateBy' => 'Paginate By',						
+		'SortBy' => 'Sort Field',
+		'SortDir' => 'Sort Order',
+		);	
+	
 	public static $has_one = array(
 		'Report' => 'AdvancedReport',			// never set for the 'template' report for a page, but used to
 												// list all the generated reports. 
@@ -50,50 +59,121 @@ class AdvancedReport extends DataObject {
 		'CSVFile' => 'File',
 		'PDFFile' => 'File',
 	);
-
-	public function getReportName() {
-		throw new Exception("Abstract method called; please implement getReportName()");
-	}
+	
+	static $default_sort = "Title ASC";
+	
+	public static $searchable_fields = array(
+		'Title',
+		'Description',
+	);
+	
+	public static $summary_fields = array(
+		'Title',
+		'Description'
+	);
+	
 
 	/**
-	 * Set any custom fields for the report here. 
+	 * Overwrites SiteTree.getCMSFields.
 	 *
-	 * @param FieldSet $fields
-	 */
-	public function updateReportFields($fields) {
-		$reportFields = $this->getReportableFields();
+	 * This method creates a customised CMS form for back-end user.
+	 *
+	 * @return fieldset
+	 */ 
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
 
-		$fieldsGroup = new FieldGroup(_t('AdvancedReport.SELECTED_FIELDS', 'Fields'),
+		$csv_file = $fields->fieldByName("Root.Main.CSVFile");
+		$pdf_file = $fields->fieldByName("Root.Main.PDFFile");
+		$html_file = $fields->fieldByName("Root.Main.HTMLFile");
+				
+		//Remove all fields - then add nicely...
+		$fields->removeFieldsFromTab("Root.Main", array(
+			"ReportFields",
+			"ReportHeaders",
+			"ConditionFields", 
+			"ConditionOps", 
+			"ConditionValues", 
+			"PaginateBy",
+			"PageHeader",
+			"SortBy",
+			"SortDir",
+			"ClearColumns",
+			"AddInRows",
+			"AddCols",
+			"CSVFile",
+			"PDFFile",
+			"HTMLFile",
+			"ReportID",
+		));
+		
+		
+		$reportFields = $this->getReportableFields();
+		
+		$fieldsGroup = new FieldGroup('Fields',
 			new MultiValueDropdownField('ReportFields', _t('AdvancedReport.REPORT_FIELDS', 'Report Fields'), $reportFields),
 			new MultiValueTextField('ReportHeaders', _t('AdvancedReport.REPORT_HEADERS', 'Headers'))
 		);
 
 		$fieldsGroup->addExtraClass('reportMultiField');
-		$fields->push($fieldsGroup);
 
-		$conditions = new FieldGroup('Conditions', 
+		$conditions = new FieldGroup('Conditions',
 			new MultiValueDropdownField('ConditionFields', _t('AdvancedReport.CONDITION_FIELDS', 'Condition Fields'), $reportFields),
 			new MultiValueDropdownField('ConditionOps', _t('AdvancedReport.CONDITION_OPERATIONS', 'Op'), self::$allowed_conditions),
 			new MultiValueTextField('ConditionValues', _t('AdvancedReport.CONDITION_VALUES', 'Value'))
 		);
 		$conditions->addExtraClass('reportMultiField');
-		$fields->push($conditions);
 		
 		$combofield = new FieldGroup('Sorting',
 			new MultiValueDropdownField('SortBy', _t('AdvancedReport.SORTED_BY', 'Sorted By'), $reportFields),
 			new MultiValueDropdownField('SortDir', _t('AdvancedReport.SORT_DIRECTION', 'Sort Direction'), array('ASC' => _t('AdvancedReport.ASC', 'Ascending'), 'DESC' => _t('AdvancedReport.DESC', 'Descending')))
 		);
 		$combofield->addExtraClass('reportMultiField');
-		$fields->push($combofield);
 
 		$paginateFields = $reportFields;
 		array_unshift($paginateFields, '');
-		$fields->push(new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields));
-		$fields->push(new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'));
 
-		$fields->push(new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields));
-		$fields->push(new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields));
-		$fields->push(new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $reportFields));
+		$fields->addFieldsToTab("Root.Main", 
+			array(
+				// Fields
+				$fieldsGroup,				
+					
+				// Conditions
+				$conditions,
+							
+				// Options
+				$combofield,				
+				
+				// Other
+				new FieldGroup('Formatting', 
+					new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields),
+					new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'),
+					new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields),
+					new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields),
+					new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $reportFields)
+				)
+			)
+		);
+		
+		/* create a dedicated tab for report download files
+		 * @todo convert to InlineFormAction or the like to allow user to download report files
+		 * @todo provide a Generate Link Action on this page
+		 */
+		$fields->addFieldsToTab("Root.Reports", 
+			array(
+				new FieldGroup("Files",
+					$csv_file,
+					$pdf_file,
+					$html_file
+				)
+			)
+		);
+		
+		return $fields;
+	}	
+		
+	public function getReportName() {
+		throw new Exception("Abstract method called; please implement getReportName()");
 	}
 
 	/**
