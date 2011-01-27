@@ -71,8 +71,18 @@ class AdvancedReport extends DataObject {
 		'Title',
 		'Description'
 	);
-	
 
+	/**
+	 * Empty method for now - need to hook it up with fields properly 
+	 * to be able to display the frontend reporting page still. If in fact that will 
+	 * be needed moving forward...
+	 *
+	 * @param FieldSet $fields 
+	 */
+	public function updateReportFields($fields) {
+		
+	}
+	
 	/**
 	 * Overwrites SiteTree.getCMSFields.
 	 *
