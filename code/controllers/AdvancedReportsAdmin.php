@@ -35,8 +35,4 @@ class AdvancedReportsAdmin extends ModelAdmin {
 		Requirements::javascript('advancedreports/javascript/advancedreports.js');
 		
 	}
-	
-	
-	
 }
-

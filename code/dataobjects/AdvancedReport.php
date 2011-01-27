@@ -111,11 +111,13 @@ class AdvancedReport extends DataObject {
 		$reportFields = $this->getReportableFields();
 		
 		$fieldsGroup = new FieldGroup('Fields',
-			new MultiValueDropdownField('ReportFields', _t('AdvancedReport.REPORT_FIELDS', 'Report Fields'), $reportFields),
-			new MultiValueTextField('ReportHeaders', _t('AdvancedReport.REPORT_HEADERS', 'Headers'))
+			$reportFieldsSelect = new MultiValueDropdownField('ReportFields', _t('AdvancedReport.REPORT_FIELDS', 'Report Fields'), $reportFields),
+			$reportHeadersEntry = new MultiValueTextField('ReportHeaders', _t('AdvancedReport.REPORT_HEADERS', 'Headers'))
 		);
 
 		$fieldsGroup->addExtraClass('reportMultiField');
+		$reportFieldsSelect->addExtraClass('reportFieldsSelection');
+		$reportHeadersEntry->addExtraClass('reportHeadersEntry');
 
 		$conditions = new FieldGroup('Conditions',
 			new MultiValueDropdownField('ConditionFields', _t('AdvancedReport.CONDITION_FIELDS', 'Condition Fields'), $reportFields),
