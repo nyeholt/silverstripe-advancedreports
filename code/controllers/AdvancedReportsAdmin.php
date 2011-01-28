@@ -33,6 +33,5 @@ class AdvancedReportsAdmin extends ModelAdmin {
 		Requirements::themedCSS('AdvancedReportsAdmin');
 		Requirements::javascript(THIRDPARTY_DIR.'/jquery-livequery/jquery.livequery.js');
 		Requirements::javascript('advancedreports/javascript/advancedreports.js');
-		
 	}
 }

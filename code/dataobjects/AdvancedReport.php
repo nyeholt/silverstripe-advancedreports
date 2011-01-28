@@ -80,44 +80,6 @@ class AdvancedReport extends DataObject {
 	 * @param FieldSet $fields 
 	 */
 	public function updateReportFields($fields) {
-		
-	}
-	
-	/**
-	 * Overwrites SiteTree.getCMSFields.
-	 *
-	 * This method creates a customised CMS form for back-end user.
-	 *
-	 * @return fieldset
-	 */ 
-	function getCMSFields() {
-		$fields = parent::getCMSFields();
-
-		$csv_file = $fields->fieldByName("Root.Main.CSVFile");
-		$pdf_file = $fields->fieldByName("Root.Main.PDFFile");
-		$html_file = $fields->fieldByName("Root.Main.HTMLFile");
-				
-		//Remove all fields - then add nicely...
-		$fields->removeFieldsFromTab("Root.Main", array(
-			"ReportFields",
-			"ReportHeaders",
-			"ConditionFields", 
-			"ConditionOps", 
-			"ConditionValues", 
-			"PaginateBy",
-			"PageHeader",
-			"SortBy",
-			"SortDir",
-			"ClearColumns",
-			"AddInRows",
-			"AddCols",
-			"CSVFile",
-			"PDFFile",
-			"HTMLFile",
-			"ReportID",
-		));
-		
-		
 		$reportFields = $this->getReportableFields();
 		
 		$fieldsGroup = new FieldGroup('Fields',
@@ -144,42 +106,57 @@ class AdvancedReport extends DataObject {
 
 		$paginateFields = $reportFields;
 		array_unshift($paginateFields, '');
+		
+		$fields->push($fieldsGroup);
+		$fields->push($conditions);
+		$fields->push($combofield);
+		$fields->push(new FieldGroup('Formatting', 
+			new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields),
+			new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'),
+			new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields),
+			new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields),
+			new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $reportFields)
+		));
+	}
+	
+	/**
+	 * Overwrites SiteTree.getCMSFields.
+	 *
+	 * This method creates a customised CMS form for back-end user.
+	 *
+	 * @return fieldset
+	 */ 
+	function getCMSFields() {
+		$reportFields = new FieldSet();
+		$this->updateReportFields($reportFields);
+//
+//		$csv_file = $fields->fieldByName("Root.Main.CSVFile");
+//		$pdf_file = $fields->fieldByName("Root.Main.PDFFile");
+//		$html_file = $fields->fieldByName("Root.Main.HTMLFile");
 
-		$fields->addFieldsToTab("Root.Main", 
-			array(
-				// Fields
-				$fieldsGroup,				
-					
-				// Conditions
-				$conditions,
-							
-				// Options
-				$combofield,				
-				
-				// Other
-				new FieldGroup('Formatting', 
-					new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields),
-					new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'),
-					new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields),
-					new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields),
-					new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $reportFields)
-				)
-			)
-		);
+		$fields = new FieldSet();
+		$fields->push(new TabSet("Root"));
+		
+		$fields->addFieldsToTab('Root.Main', array(
+			new TextField('Title', _t('AdvancedReport.TITLE', 'Title')),
+			new TextareaField('Description', _t('AdvancedReport.DESCRIPTION', 'Description'))
+		));
+		
+		$fields->addFieldsToTab("Root.Main", $reportFields);
 		
 		/* create a dedicated tab for report download files
 		 * @todo convert to InlineFormAction or the like to allow user to download report files
 		 * @todo provide a Generate Link Action on this page
 		 */
-		$fields->addFieldsToTab("Root.Reports", 
-			array(
-				new FieldGroup("Files",
-					$csv_file,
-					$pdf_file,
-					$html_file
-				)
-			)
-		);
+//		$fields->addFieldsToTab("Root.Reports", 
+//			array(
+//				new FieldGroup("Files",
+//					$csv_file,
+//					$pdf_file,
+//					$html_file
+//				)
+//			)
+//		);
 		
 		return $fields;
 	}	
