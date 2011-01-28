@@ -14,6 +14,7 @@ class AdvancedReportsAdmin extends ModelAdmin {
 	
 	static $menu_title = "Advanced Reports";
 	
+	public static $collection_controller_class = "AdvancedReportsAdmin_CollectionController";
 
 	function __construct() {
 		//Add Advanced Reports prior to parent contruction
@@ -33,5 +34,18 @@ class AdvancedReportsAdmin extends ModelAdmin {
 		Requirements::themedCSS('AdvancedReportsAdmin');
 		Requirements::javascript(THIRDPARTY_DIR.'/jquery-livequery/jquery.livequery.js');
 		Requirements::javascript('advancedreports/javascript/advancedreports.js');
+	}
+}
+
+class AdvancedReportsAdmin_CollectionController extends ModelAdmin_CollectionController {
+		
+	/**
+	 * Override model admin to only return those items that AREN'T generated reports. 
+	 * @return SQLQuery
+	 */
+	function getSearchQuery($searchCriteria) {
+		$query = parent::getSearchQuery($searchCriteria);
+		$query->where('"ReportID" = 0');
+		return $query;
 	}
 }

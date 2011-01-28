@@ -28,6 +28,7 @@ class AdvancedReport extends DataObject {
 
     public static $db = array(
 		'Title' => 'Varchar(128)',
+		'GeneratedReportTitle' => 'Varchar(128)',
 		'Description' => 'Text',
 		'ReportFields' => 'MultiValueField',
 		'ReportHeaders' => 'MultiValueField',
@@ -58,6 +59,10 @@ class AdvancedReport extends DataObject {
 		'HTMLFile' => 'File',
 		'CSVFile' => 'File',
 		'PDFFile' => 'File',
+	);
+	
+	public static $has_many = array(
+		'Reports'		=> 'AdvancedReport',
 	);
 	
 	static $default_sort = "Title ASC";
@@ -144,23 +149,50 @@ class AdvancedReport extends DataObject {
 		
 		$fields->addFieldsToTab("Root.Main", $reportFields);
 		
-		/* create a dedicated tab for report download files
-		 * @todo convert to InlineFormAction or the like to allow user to download report files
-		 * @todo provide a Generate Link Action on this page
-		 */
-//		$fields->addFieldsToTab("Root.Reports", 
-//			array(
-//				new FieldGroup("Files",
-//					$csv_file,
-//					$pdf_file,
-//					$html_file
-//				)
-//			)
-//		);
+		$reportField = new TableListField(
+			'Reports', 
+			'AdvancedReport',
+			array(
+				'Title'			=> 'Title',
+				'Created'		=> 'Generated',
+			),
+			'"ReportID" = '.((int) $this->ID)
+		);
+		
+		$fields->addFieldsToTab('Root.Reports', array(
+			$reportField,
+			new TextField('GeneratedReportTitle', _t('AdvancedReport.GENERATED_TITLE', 'Generated Title')),
+			new CheckboxField('GenerateReport', _t('AdvancedReport.GENERATE_REPORT', 'Generate Report')),
+				
+		));
 		
 		return $fields;
-	}	
+	}
+	
+	/**
+	 * Always set generate report to '0' whenever we save. 
+	 */
+	public function onBeforeWrite() {
+		parent::onBeforeWrite();
+		if ($this->GenerateReport) {
+			$this->GenerateReport = 0;
+			$this->prepareGeneration();
+		}
 		
+		$this->GeneratedReportTitle = $this->Title;
+	}
+	
+	public function prepareGeneration() {
+		$report = $this->duplicate(false);
+		$report->ReportID = $this->ID;
+		$report->Title = $this->GeneratedReportTitle;
+		$report->write();
+		
+		$report->generateReport('html');
+		$report->generateReport('csv');
+		$report->generateReport('pdf');
+	}
+	
 	public function getReportName() {
 		throw new Exception("Abstract method called; please implement getReportName()");
 	}
