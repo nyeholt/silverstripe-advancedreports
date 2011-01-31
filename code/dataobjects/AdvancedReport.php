@@ -153,18 +153,29 @@ class AdvancedReport extends DataObject {
 			'Reports', 
 			'AdvancedReport',
 			array(
-				'Title'			=> 'Title',
-				'Created'		=> 'Generated',
+				'Title'					=> 'Title',
+				'Created'				=> 'Generated',
+				'ID'					=> 'Links'
 			),
 			'"ReportID" = '.((int) $this->ID)
 		);
 		
+		$links = '<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("csv")."\'>CSV</a> '.
+					'<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("pdf")."\'>PDF</a> '.
+					'<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("html")."\'>HTML</a> ';
+		
+		$reportField->setFieldFormatting(array(
+			'ID' => $links,
+		));
+
 		$fields->addFieldsToTab('Root.Reports', array(
 			$reportField,
-			new TextField('GeneratedReportTitle', _t('AdvancedReport.GENERATED_TITLE', 'Generated Title')),
+			new TextField('GeneratedReportTitle', _t('AdvancedReport.GENERATED_TITLE', 'Title for generated report')),
 			new CheckboxField('GenerateReport', _t('AdvancedReport.GENERATE_REPORT', 'Generate Report')),
 				
 		));
+		
+		$this->extend('updateCMSFields', $fields);
 		
 		return $fields;
 	}
@@ -176,13 +187,17 @@ class AdvancedReport extends DataObject {
 		parent::onBeforeWrite();
 		if ($this->GenerateReport) {
 			$this->GenerateReport = 0;
-			$this->prepareGeneration();
+			$this->prepareAndGenerate();
 		}
 		
 		$this->GeneratedReportTitle = $this->Title;
 	}
 	
-	public function prepareGeneration() {
+	/**
+	 * Prepare and generate this report into report instances
+	 * 
+	 */
+	public function prepareAndGenerate() {
 		$report = $this->duplicate(false);
 		$report->ReportID = $this->ID;
 		$report->Title = $this->GeneratedReportTitle;
@@ -193,6 +208,22 @@ class AdvancedReport extends DataObject {
 		$report->generateReport('pdf');
 	}
 	
+	/**
+	 * Get a link to a specific instance of this report. 
+	 * 
+	 * @param String $type 
+	 */
+	public function getFileLink($type) {
+		$prop = strtoupper($type).'File';
+		if (isset(self::$has_one[$prop])) {
+			$file = $this->$prop();
+			return $file->Link();
+		}
+	}
+	
+	/**
+	 * Abstract method; actual reports should define this. 
+	 */
 	public function getReportName() {
 		throw new Exception("Abstract method called; please implement getReportName()");
 	}
