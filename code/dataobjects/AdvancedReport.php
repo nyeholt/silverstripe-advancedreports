@@ -483,7 +483,7 @@ class AdvancedReport extends DataObject {
 		foreach ($classes as $cls) {
 			if ($cls == 'AdvancedReport') {
 				// catchall
-				$templates[] = 'AdvancedReport';
+				$templates[] = 'AdvancedReport' . '_' . $renderFormat;
 				break;
 			}
 			$templates[] = $cls . '_' . $renderFormat;
@@ -492,7 +492,10 @@ class AdvancedReport extends DataObject {
 		$date = DBField::create('SS_Datetime', time());
 		$this->Text = nl2br($this->Text);
 		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format, 'Now' => $date))->renderWith($templates);
-
+		if (!$output) {
+			// put_contents fails if it's an empty string... 
+			$output = " ";
+		}
 		if (!$convertTo) {
 			if ($store) {
 				// stick it in a temp file?
@@ -500,7 +503,7 @@ class AdvancedReport extends DataObject {
 				if (file_put_contents($outputFile, $output)) {
 					return new AdvancedReportOutput(null, $outputFile);
 				} else {
-					throw new Exception("Failed creating report"); 
+					throw new Exception("Failed creating report in $outputFile"); 
 				}
 
 			} else {
