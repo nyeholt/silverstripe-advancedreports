@@ -76,6 +76,7 @@ class AdvancedReport extends DataObject {
 		'Title',
 		'Description'
 	);
+	
 
 	/**
 	 * Empty method for now - need to hook it up with fields properly 
