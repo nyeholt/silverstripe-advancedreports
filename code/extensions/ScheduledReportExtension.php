@@ -59,23 +59,26 @@ class ScheduledReportExtension extends DataObjectDecorator {
 			$this->owner->ScheduledTitle = $this->owner->Title;
 		}
 		
-		$changed = $this->owner->getChangedFields();
-		$changed = isset($changed['FirstGeneration']) || isset($changed['RegenerateEvery']) || isset($changed['RegenerateFree']);
-		
-		if ($changed && $this->owner->ScheduledJobID) {
-			$this->owner->ScheduledJob()->delete();
-			$this->owner->ScheduledJobID = 0;
-		}
-		
-		if (!$this->owner->ScheduledJobID) {
-			$job = new ScheduledReportJob($this->owner);
-			$time = date('Y-m-d H:i:s');
-			if ($this->owner->FirstGeneration) {
-				$time = date('Y-m-d H:i:s', strtotime($this->owner->FirstGeneration));
+		if ($this->owner->FirstGeneration) {
+			$changed = $this->owner->getChangedFields();
+			$changed = isset($changed['FirstGeneration']) || isset($changed['RegenerateEvery']) || isset($changed['RegenerateFree']);
+
+			if ($changed && $this->owner->ScheduledJobID) {
+				$this->owner->ScheduledJob()->delete();
+				$this->owner->ScheduledJobID = 0;
 			}
-			
-			$this->owner->ScheduledJobID = singleton('QueuedJobService')->queueJob($job, $time);
+
+			if (!$this->owner->ScheduledJobID) {
+				$job = new ScheduledReportJob($this->owner);
+				$time = date('Y-m-d H:i:s');
+				if ($this->owner->FirstGeneration) {
+					$time = date('Y-m-d H:i:s', strtotime($this->owner->FirstGeneration));
+				}
+
+				$this->owner->ScheduledJobID = singleton('QueuedJobService')->queueJob($job, $time);
+			}
 		}
+
 		
 	}
 }
