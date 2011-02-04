@@ -380,7 +380,7 @@ class AdvancedReport extends DataObject {
 					// see http://blog.feedmarker.com/2006/02/01/how-to-do-natural-alpha-numeric-sort-in-mysql/
 					// for why we're + 0 here. Basically, coercing an alphanum sort instead of straight string
 					if (in_array($sortOpt, $numericSort)) {
-						$sortOpt .= '+ 0';
+						$sortOpt .= '+0';
 					}
 					$sortBy .= $sep . $sortOpt . ' ' . $dir;
 					$sep = ', ';
