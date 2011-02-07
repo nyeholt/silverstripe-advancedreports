@@ -7,6 +7,10 @@
  */
 class HtmlReportFormatter extends ReportFormatter {
 
+	protected function getOutputFormat() {
+		return 'html';
+	}
+	
 	/**
 	 * Create a header for the report
 	 */

@@ -164,6 +164,7 @@ abstract class ReportFormatter {
 				// see if we can resolve it to a value on our data object
 				if (isset($mapping[$field]) && $rawValue) {
 					$format = $mapping[$field];
+					$outputFormat = $this->getOutputFormat();
 					eval('$value = ' . $format . ';');
 				} else if ($rawValue) {
 					$value = $rawValue;
@@ -229,7 +230,6 @@ abstract class ReportFormatter {
 				}
 
 				// figure out the name of the field we want to stick the Total text
-
 				$sums[$titleColumn] = _t('ReportFormatter.ROW_TOTAL', 'Total');
 				$data[] = $sums;
 				$this->data[$tableName] = $data;
@@ -251,6 +251,11 @@ abstract class ReportFormatter {
 		return $newVals;
 	}
 
+	/**
+	 * Indicate what output format we're going to 
+	 */
+	abstract protected function getOutputFormat();
+	
 	/**
 	 * Create a header for the report
 	 */

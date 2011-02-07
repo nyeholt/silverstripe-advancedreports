@@ -479,7 +479,6 @@ class AdvancedReport extends DataObject {
 	 */
 	public function createReport($format='html', $store = false) {
 		Requirements::clear();
-		
 		$convertTo = null;
 		$renderFormat = $format;
 		if (isset(self::$conversion_formats[$format])) {

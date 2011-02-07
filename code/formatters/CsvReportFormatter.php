@@ -6,6 +6,11 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class CsvReportFormatter extends ReportFormatter {
+	
+	protected function getOutputFormat() {
+		return 'csv';
+	}
+	
 	/**
 	 * Create a header for the report
 	 */
