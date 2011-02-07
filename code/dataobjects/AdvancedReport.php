@@ -284,7 +284,7 @@ class AdvancedReport extends DataObject {
 		foreach ($fields as $field) {
 			if (isset($reportFields[$field])) {
 				if (strpos($field, '.')) {
-					$field = $field . ' AS ' . $this->dottedFieldToUnique($field);
+					$field = '"'.$field . '" AS "' . $this->dottedFieldToUnique($field) . '"';
 				}
 				$toSelect[] = $field;
 			}
