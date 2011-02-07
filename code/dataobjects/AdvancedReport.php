@@ -27,21 +27,22 @@ class AdvancedReport extends DataObject {
 	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List');
 
     public static $db = array(
-		'Title' => 'Varchar(128)',
-		'GeneratedReportTitle' => 'Varchar(128)',
-		'Description' => 'Text',
-		'ReportFields' => 'MultiValueField',
-		'ReportHeaders' => 'MultiValueField',
-		'ConditionFields' => 'MultiValueField',
-		'ConditionOps' => 'MultiValueField',
-		'ConditionValues' => 'MultiValueField',
-		'PaginateBy' => 'Varchar(64)',						// a field used to separate tables (eg financial years)
-		'PageHeader' => 'Varchar(64)',						// used as a keyworded string for pages
-		'SortBy' => 'MultiValueField',
-		'SortDir' => 'MultiValueField',
-		'ClearColumns' => 'MultiValueField',
-		'AddInRows' => 'MultiValueField',					// which fields in each row should be added?
-		'AddCols' => 'MultiValueField'						// Which columns should be added ?
+		'Title'						=> 'Varchar(128)',
+		'GeneratedReportTitle'		=> 'Varchar(128)',
+		'Description'				=> 'Text',
+		'ReportFields'				=> 'MultiValueField',
+		'ReportHeaders'				=> 'MultiValueField',
+		'ConditionFields'			=> 'MultiValueField',
+		'ConditionOps'				=> 'MultiValueField',
+		'ConditionValues'			=> 'MultiValueField',
+		'PaginateBy'				=> 'Varchar(64)',		// a field used to separate tables (eg financial years)
+		'PageHeader'				=> 'Varchar(64)',		// used as a keyworded string for pages
+		'SortBy'					=> 'MultiValueField',
+		'SortDir'					=> 'MultiValueField',
+		'ClearColumns'				=> 'MultiValueField',
+		'AddInRows'					=> 'MultiValueField',	// which fields in each row should be added?
+		'AddCols'					=> 'MultiValueField',	// Which columns should be added ?
+		'NumericSort'				=> 'MultiValueField',	// columns to be numericly sorted
 	);
 
 	static $field_labels = array(
@@ -116,6 +117,9 @@ class AdvancedReport extends DataObject {
 		$fields->push($fieldsGroup);
 		$fields->push($conditions);
 		$fields->push($combofield);
+		
+		$fields->push(new MultiValueDropdownField('NumericSort', _t('AdvancedReports.SORT_NUMERICALLY', 'Sort these fields numerically'), $this->getReportableFields()));
+		
 		$fields->push(new FieldGroup('Formatting', 
 			new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields),
 			new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'),
@@ -158,8 +162,11 @@ class AdvancedReport extends DataObject {
 				'Created'				=> 'Generated',
 				'ID'					=> 'Links'
 			),
-			'"ReportID" = '.((int) $this->ID)
+			'"ReportID" = '.((int) $this->ID),
+			'"Created" DESC'
 		);
+		
+		$reportField->setShowPagination(true);
 		
 		$links = '<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("csv")."\'>CSV</a> '.
 					'<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("pdf")."\'>PDF</a> '.
@@ -284,7 +291,12 @@ class AdvancedReport extends DataObject {
 		foreach ($fields as $field) {
 			if (isset($reportFields[$field])) {
 				if (strpos($field, '.')) {
-					$field = '"'.$field . '" AS "' . $this->dottedFieldToUnique($field) . '"';
+					$parts = explode('.', $field);
+					$sep = '';
+					$quotedField = implode('"."', $parts);
+					$field = '"'.$quotedField . '" AS "' . $this->dottedFieldToUnique($field) . '"';
+				} else {
+					$field = '"'.$field.'"';
 				}
 				$toSelect[] = $field;
 			}
@@ -407,6 +419,9 @@ class AdvancedReport extends DataObject {
 	 * 
 	 */
 	protected function getNumericSortFields() {
+		if ($this->NumericSort) {
+			return $this->NumericSort->getValue();
+		}
 		return array();
 	}
 

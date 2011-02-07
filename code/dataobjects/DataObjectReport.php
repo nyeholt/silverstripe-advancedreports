@@ -11,7 +11,6 @@ class DataObjectReport extends AdvancedReport {
 	
 	public static $db = array(
 		'ReportOn'			=> 'Varchar(64)',
-		'NumericSort'		=> 'MultiValueField',
 	);
 
 	public function getReportName() {
@@ -43,12 +42,6 @@ class DataObjectReport extends AdvancedReport {
 		
 		$fields->addFieldToTab('Root.Main', new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report On'), $types), 'Fields');
 		
-		$fields->addFieldToTab(
-			'Root.Main', 
-			new MultiValueDropdownField('NumericSort', _t('AdvancedReports.SORT_NUMERICALLY', 'Sort numerically'), $this->getReportableFields()),
-			'Formatting'
-		);
-		
 		return $fields;
 	}
 
@@ -57,13 +50,6 @@ class DataObjectReport extends AdvancedReport {
 		
 		$items = DataObject::get($this->ReportOn, $this->getFilter(), $sortBy);
 		return $items;
-	}
-	
-	protected function getNumericSortFields() {
-		if ($this->NumericSort) {
-			return $this->NumericSort->getValue();
-		}
-		return array();
 	}
 	
 	/**
