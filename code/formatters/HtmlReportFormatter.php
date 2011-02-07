@@ -63,7 +63,7 @@ class HtmlReportFormatter extends ReportFormatter {
 			if ($tableName != ReportFormatter::DEFAULT_TABLE_NAME) {
 				$bits .= '<h2 class="reportTableName">'.$tableName."</h2>\n";
 			}
-			$bits .=  '<table class="reporttable">'.$table['Header'].$table['Body'].'</table>'."\n\n";
+			$bits .=  '<table class="reporttable" cellpadding="0" cellspacing="0">'.$table['Header'].$table['Body'].'</table>'."\n\n";
 		}
 		return $bits;
 	}
