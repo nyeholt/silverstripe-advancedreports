@@ -507,7 +507,13 @@ class AdvancedReport extends DataObject {
 
 		$date = DBField::create('SS_Datetime', time());
 		$this->Text = nl2br($this->Text);
-		$output = $this->customise(array('ReportContent' => $content, 'Format' => $format, 'Now' => $date))->renderWith($templates);
+		
+		$reportData = array('ReportContent' => $content, 'Format' => $format, 'Now' => $date);
+		$additionalData = $this->additionalReportData();
+		$reportData = array_merge($reportData, $additionalData);
+
+		$output = $this->customise($reportData)->renderWith($templates);
+
 		if (!$output) {
 			// put_contents fails if it's an empty string... 
 			$output = " ";
@@ -543,6 +549,15 @@ class AdvancedReport extends DataObject {
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Get an array of additional data to add to a report. 
+	 * 
+	 * @return array
+	 */
+	protected function additionalReportData() {
+		return array();
 	}
 
 	/**
