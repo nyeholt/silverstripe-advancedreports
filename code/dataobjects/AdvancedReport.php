@@ -269,10 +269,22 @@ class AdvancedReport extends DataObject {
 		$reportFields = $this->getReportableFields();
 		$sel = $this->ReportFields->getValues();
 		$headerTitles = $this->ReportHeaders->getValues();
+		$selected = array();
+		
 		for ($i = 0, $c = count($sel); $i < $c; $i++) {
 			$field = $sel[$i];
 			$fieldName = $this->dottedFieldToUnique($field);
+			
+			if (isset($selected[$field])) {
+				$selected[$field]++;
+				$fieldName .= '_' . $selected[$field];
+			}
+			
 			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : $reportFields[$field];
+			
+			if (!isset($selected[$field])) {
+				$selected[$field] = 1;
+			}
 		}
 		return $headers;
 	}
@@ -284,23 +296,42 @@ class AdvancedReport extends DataObject {
 	 * @return array
 	 */
 	protected function getReportFieldsForQuery() {
-
 		$fields = $this->ReportFields->getValues();
 		$reportFields = $this->getReportableFields();
 		$toSelect = array();
+		
+		$selected = array();
+		
 		foreach ($fields as $field) {
 			if (isset($reportFields[$field])) {
+				$fieldName = $field;
 				if (strpos($field, '.')) {
 					$parts = explode('.', $field);
 					$sep = '';
 					$quotedField = implode('"."', $parts);
+					
+					if (isset($selected[$fieldName])) {
+						$selected[$fieldName]++;
+						$field = $field . '_' . $selected[$fieldName];
+					}
+					
 					$field = '"'.$quotedField . '" AS "' . $this->dottedFieldToUnique($field) . '"';
 				} else {
-					$field = '"'.$field.'"';
+					if (isset($selected[$fieldName])) {
+						$selected[$fieldName]++;
+						$field = '"'.$field.'" AS "'.$field . '_' . $selected[$fieldName].'"';
+					} else {
+						$field = '"'.$field.'"';
+					}
 				}
 				$toSelect[] = $field;
 			}
+
+			if (!isset($selected[$fieldName])) {
+				$selected[$fieldName] = 1;
+			}
 		}
+
 		return $toSelect;
 	}
 
@@ -517,6 +548,7 @@ class AdvancedReport extends DataObject {
 			// put_contents fails if it's an empty string... 
 			$output = " ";
 		}
+
 		if (!$convertTo) {
 			if ($store) {
 				// stick it in a temp file?

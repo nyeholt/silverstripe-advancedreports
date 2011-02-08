@@ -75,4 +75,4 @@ div.logo { background: transparent url(images/report_logo.png) no-repeat;  width
 .printOnly { display: block }
 
 .printLogo { width: 190px; height: 65px;  margin: 30px auto; background: transparent url(images/report_logo.png) no-repeat; }
-#PrintCoverPage { width: 50%; margin: 0px auto; text-align: center;}
+#PrintCoverPage { width: 18.8cm; text-align: center;}
