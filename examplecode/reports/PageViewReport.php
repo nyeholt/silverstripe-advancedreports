@@ -1,11 +1,12 @@
 <?php
 
 /**
+ * Example report class 
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
  */
-class PageViewReport extends AdvancedReport {
+class PageViewReport /*extends AdvancedReport*/ {
 
 	public static $db = array(
 		'Pages' => 'MultiValueField',
