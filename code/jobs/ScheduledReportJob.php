@@ -8,12 +8,14 @@
  */
 class ScheduledReportJob extends AbstractQueuedJob {
 	
-	public function __construct($report, $timesGenerated = 0) {
-		$this->reportID = $report->ID;
-		// captured so we have a unique hash generated for this job 
-		$this->timesGenerated = $timesGenerated;
-		
-		$this->totalSteps = 1;
+	public function __construct($report = null, $timesGenerated = 0) {
+		if ($report) {
+			$this->reportID = $report->ID;
+			// captured so we have a unique hash generated for this job 
+			$this->timesGenerated = $timesGenerated;
+
+			$this->totalSteps = 1;
+		}
 	}
 	
 	public function getReport() {
