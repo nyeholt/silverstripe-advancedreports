@@ -4,25 +4,33 @@
 * @author Rodney Way <rodney@silverstripe.com.au>
 */
 class AdvancedReportsAdmin extends ModelAdmin {
-	
-	
 	//Set it to a default value - contructor will override
-	static $managed_models = array('AdvancedReport',
-    );
+	static $managed_models = array('DataObjectReport');
     
 	static $url_segment = 'advanced-reports';
 	
 	static $menu_title = "Advanced Reports";
+	
+	/**
+	 * If you want only a specific set of reports, set it here
+	 * and it will be used
+	 *
+	 * @var array
+	 */
+	public static $specific_reports;
 	
 	public static $collection_controller_class = "AdvancedReportsAdmin_CollectionController";
 	
 	public static $record_controller_class = 'AdvancedReportsAdmin_RecordController';
 
 	function __construct() {
-		//Add Advanced Reports prior to parent contruction
-		$classes = ClassInfo::subclassesFor('AdvancedReport');
-		array_shift($classes);
-		self::$managed_models = array_keys($classes);
+		// if we haven't specified a custom set of reports, generate it automatically.
+		if (!count(self::$managed_models) || self::$managed_models[0] == 'DataObjectReport') {
+			$classes = ClassInfo::subclassesFor('AdvancedReport');
+			array_shift($classes);
+			self::$managed_models = array_keys($classes);
+		}
+		
 		parent::__construct();
 		
 		$this->showImportForm = false;
