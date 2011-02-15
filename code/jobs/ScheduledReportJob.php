@@ -44,13 +44,14 @@ class ScheduledReportJob extends AbstractQueuedJob {
 				$timeStr = '+1 ' . $report->RegenerateEvery;
 			}
 			
-			$this->currentStep++;
-			$this->isComplete = true;
 			
 			$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
 			$nextId = singleton('QueuedJobService')->queueJob(new ScheduledReportJob($report, $this->timesGenerated + 1), $nextGen);
 			$report->ScheduledJobID = $nextId;
 			$report->write();
 		}
+
+		$this->currentStep++;
+		$this->isComplete = true;
 	}
 }
