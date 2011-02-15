@@ -43,14 +43,15 @@ class ScheduledReportExtension extends DataObjectDecorator {
 					new ReadonlyField('NextRunDate', _t('AdvancedReports.NEXT_RUN_DATE', 'Next run date'), $jobTime)
 				));
 			}
+			
+			$dt->getDateField()->setConfig('showcalendar', true);
+			$dt->getTimeField()->setConfig('showdropdown', true);
 
 		} else {
 			$fields->addFieldToTab('Root.Schedule', new LiteralField('WARNING', 'You must install the Queued Jobs module to schedule reports'));
 		}
 		
 		
-		$dt->getDateField()->setConfig('showcalendar', true);
-		$dt->getTimeField()->setConfig('showdropdown', true);
 	}
 	
 	public function onBeforeWrite() {
