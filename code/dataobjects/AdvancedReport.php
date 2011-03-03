@@ -637,6 +637,40 @@ class AdvancedReport extends DataObject {
 		$folderName = 'advanced-reports/'.$this->ReportID.'/'.$this->ID;
 		return Folder::findOrMake($folderName);
 	}
+	
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
+	public function canView($member = null) {
+		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+	}
+
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
+	public function canEdit($member = null) {
+		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+	}
+
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
+	public function canDelete($member = null) {
+		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+	}
+
+	/**
+	 * @todo Should canCreate be a static method?
+	 *
+	 * @param Member $member
+	 * @return boolean
+	 */
+	public function canCreate($member = null) {
+		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+	}
 }
 
 /**
