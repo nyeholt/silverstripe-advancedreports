@@ -643,6 +643,9 @@ class AdvancedReport extends DataObject {
 	 * @return boolean
 	 */
 	public function canView($member = null) {
+		if (!$member) {
+			$member = Member::currentUser();
+		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
@@ -651,6 +654,9 @@ class AdvancedReport extends DataObject {
 	 * @return boolean
 	 */
 	public function canEdit($member = null) {
+		if (!$member) {
+			$member = Member::currentUser();
+		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
@@ -659,6 +665,9 @@ class AdvancedReport extends DataObject {
 	 * @return boolean
 	 */
 	public function canDelete($member = null) {
+		if (!$member) {
+			$member = Member::currentUser();
+		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
@@ -669,6 +678,9 @@ class AdvancedReport extends DataObject {
 	 * @return boolean
 	 */
 	public function canCreate($member = null) {
+		if (!$member) {
+			$member = Member::currentUser();
+		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 }
