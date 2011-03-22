@@ -13,6 +13,8 @@ Marcus Nyeholt
   https://github.com/nyeholt/silverstripe-queuedjobs
 * PDFRendition module for PDF generation of reports
   https://github.com/nyeholt/silverstripe-pdfrendition
+* MultiValueField for selecting fields
+  https://github.com/nyeholt/silverstripe-multivaluefield
 
 
 ## Documentation
