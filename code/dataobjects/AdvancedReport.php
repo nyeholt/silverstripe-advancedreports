@@ -24,7 +24,7 @@ class AdvancedReport extends DataObject {
 	 */
 	public static $conversion_formats = array('pdf' => 'html');
 
-	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List');
+	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List', 'IS' => 'IS', 'IS NOT' => 'IS NOT');
 
     public static $db = array(
 		'Title'						=> 'Varchar(128)',
@@ -379,8 +379,18 @@ class AdvancedReport extends DataObject {
 
 			$val = $vals[$i];
 
-			if ($op == 'IN') {
-				$val = explode(',', $val);
+			switch ($op) {
+				case 'IN': {
+					$val = explode(',', $val);
+					break;
+				}
+				case 'IS': 
+				case 'IS NOT': {
+					if (strtolower($val) == 'null') {
+						$val = null;
+					}
+					break;
+				}
 			}
 
 			$filter[$field . ' ' . $op] = $val;
