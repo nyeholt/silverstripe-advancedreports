@@ -1,3 +1,7 @@
+2011-03-28 v0.1.1
+-----------------
+
+* Ability to specific IS NOT NULL and IS NULL conditions
 
 2011-02-15 v0.1.0
 -----------------
