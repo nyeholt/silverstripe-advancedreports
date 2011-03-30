@@ -298,9 +298,17 @@ class AdvancedReport extends DataObject {
 	protected function getReportFieldsForQuery() {
 		$fields = $this->ReportFields->getValues();
 		$reportFields = $this->getReportableFields();
-		$toSelect = array();
+		$sortVals = $this->SortBy->getValues();
 		
+		$toSelect = array();
 		$selected = array();
+		
+		// make sure our sortvals are in the query too
+		foreach ($sortVals as $sortOpt) {
+			if (!in_array($sortOpt, $fields)) {
+				$fields[] = $sortOpt;
+			}
+		}
 		
 		foreach ($fields as $field) {
 			if (isset($reportFields[$field])) {
