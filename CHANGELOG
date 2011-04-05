@@ -1,3 +1,11 @@
+
+2011-04-05 v0.1.2
+-----------------
+
+* Fixed problem where empty values were not being passed through to formatting functions
+* Fixed formatting of table in PDF
+* Allow PDF previews
+
 2011-03-28 v0.1.1
 -----------------
 
