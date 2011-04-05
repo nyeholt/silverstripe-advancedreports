@@ -162,7 +162,7 @@ abstract class ReportFormatter {
 
 				// based on the field name we've been given, lets
 				// see if we can resolve it to a value on our data object
-				if (isset($mapping[$field]) && $rawValue) {
+				if (isset($mapping[$field])) {
 					$format = $mapping[$field];
 					$outputFormat = $this->getOutputFormat();
 					eval('$value = ' . $format . ';');

@@ -61,11 +61,12 @@ class AdvancedReportsAdmin_RecordController extends ModelAdmin_RecordController 
 	}
 	
 	public function preview() {
-		$output = $this->currentRecord->createReport('html');
-		if ($output->filename) {
-			
+		if ($this->request->getVar('format') == 'pdf') {
+			$output = $this->currentRecord->createReport('pdf');
+		} else {
+			$output = $this->currentRecord->createReport('html');
 		}
-
+		
 		if ($output->content) {
 			echo $output->content;
 		}

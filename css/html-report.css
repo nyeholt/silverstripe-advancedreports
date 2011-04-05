@@ -42,25 +42,28 @@ h3 { font-size: 12pt; color: #000; }
 #pagenumber:before { content: counter(page); }
 #pagecount:before { content: counter(pages); }
 
-table.reporttable { width: 100%; -fs-table-paginate: paginate; border-collapse: collapse; border: 0 none; margin: 0 0 20px 0; padding: 0; }
+
+table.reporttable { width: 100%; -fs-table-paginate: paginate; border-collapse: collapse; border: 0 none; margin: 20px 0 20px 0; padding: 0; }
 
 table.reporttable thead th {
 	background: #666;
 	color: #FFF;
 	margin: 0;
 	padding: 4pt;
+	height: 35px;
 	border: 0 none !important;
 }
+
 
 table.reporttable tbody td {
 	border: 0 none;
 	margin: 0;
 	padding: 4pt;
-	border-top: 1px solid #000;
+	border-bottom: 1px solid #000;
 }
 
 table.reporttable tbody td.noReportData {
-	border-top: none;
+	border-bottom: none;
 }
 
 h2.reportTableName { margin: 20px 0; page-break-before: always;}
