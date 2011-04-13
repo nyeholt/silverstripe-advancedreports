@@ -300,6 +300,10 @@ class AdvancedReport extends DataObject {
 		$reportFields = $this->getReportableFields();
 		$sortVals = $this->SortBy->getValues();
 		
+		if (!$sortVals) {
+			$sortVals = array();
+		}
+
 		$toSelect = array();
 		$selected = array();
 		

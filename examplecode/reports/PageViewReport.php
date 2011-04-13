@@ -2,11 +2,13 @@
 
 /**
  * Example report class 
+ * 
+ * make it extends AdvancedReport to actually use it...
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
  */
-class PageViewReport /*extends AdvancedReport*/ {
+class PageViewReport  {
 
 	public static $db = array(
 		'Pages' => 'MultiValueField',
