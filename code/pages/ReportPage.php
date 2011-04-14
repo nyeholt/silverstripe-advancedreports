@@ -57,7 +57,6 @@ class ReportPage extends Page implements PermissionProvider {
 		return DataObject::get('AdvancedReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
 	}
 	
-	
 	public function providePermissions() {
 		return array(
 			'EDIT_ADVANCED_REPORT' => array(
@@ -185,7 +184,7 @@ class ReportPage_Controller extends Page_Controller {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function preview($data, Form $form, $request) {
-		if ($this->data()->canEdit()) {
+		if ($this->data()->canEdit() || Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
 			$this->saveReportTemplate($data, $form);
 		}
 		
