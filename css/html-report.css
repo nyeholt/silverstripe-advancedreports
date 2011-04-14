@@ -59,11 +59,11 @@ table.reporttable tbody td {
 	border: 0 none;
 	margin: 0;
 	padding: 4pt;
-	border-bottom: 1px solid #000;
+	border-top: 1px solid #000;
 }
 
 table.reporttable tbody td.noReportData {
-	border-bottom: none;
+	border-top: none;
 }
 
 h2.reportTableName { margin: 20px 0; page-break-before: always;}
