@@ -705,6 +705,7 @@ class AdvancedReport extends DataObject {
 		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
+	
 }
 
 /**

@@ -31,7 +31,7 @@ class ReportHolder_Controller extends Page_Controller {
 	}
 
 	public function Form() {
-		if ($this->data()->canEdit()) {
+		if ($this->data()->canEdit() || Permission::check('EDIT_ADVANCED_REPORT', 'any')) {
 			$classes = ClassInfo::subclassesFor('AdvancedReport');
 			array_shift($classes);
 			//array_unshift($classes, '');

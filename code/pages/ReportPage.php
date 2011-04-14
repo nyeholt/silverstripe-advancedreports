@@ -1,16 +1,16 @@
 <?php
 
 /**
+ * A Report Page is a frontend interface to creating and generating reports. 
+ * 
  * The page shown to the user that shows input fields for changing
  * the structure of the report, as well as all previously generated
  * instances of this report
  *
- * The logic 'may' not be correct because I'm so so tired. 
- *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
  */
-class ReportPage extends Page {
+class ReportPage extends Page implements PermissionProvider {
     public static $db = array(
 		'ReportType' => 'Varchar(64)',
 	);
@@ -56,6 +56,24 @@ class ReportPage extends Page {
 	public function getReports() {
 		return DataObject::get('AdvancedReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
 	}
+	
+	
+	public function providePermissions() {
+		return array(
+			'EDIT_ADVANCED_REPORT' => array(
+				'name' => _t('AdvancedReport.EDIT', 'Create and edit Advanced Report pages'),
+				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
+				'help' => _t('AdvancedReport.ADVANCED_REPORTS_EDIT_HELP', 'Users with this permission can create new Report Pages from a Report Holder page'),
+				'sort' => 400
+			),
+			'GENERATE_ADVANCED_REPORT' => array(
+				'name' => _t('AdvancedReport.GENERATE', 'Generate an Advanced Report'),
+				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
+				'help' => _t('AdvancedReport.ADVANCED_REPORTS_GENERATE_HELP', 'Users with this permission can generate reports based on existing report templates via a frontend Report Page'),
+				'sort' => 400
+			),
+		);
+	}
 }
 
 class ReportPage_Controller extends Page_Controller {
@@ -94,6 +112,20 @@ class ReportPage_Controller extends Page_Controller {
 			$form->loadDataFrom($template);
 			$form->addExtraClass('ReportForm');
 			return $form;
+		} else if (Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
+			$fields = new FieldSet();
+			$fields->push(new TextField('Title', _t('ReportPage.NEW_TITLE', 'Title for generated reports')));
+			
+			$actions = new FieldSet(
+				new FormAction('preview', _t('AdvancedReports.PREVIEW', 'Preview')),
+				new FormAction('generate', _t('AdvancedReports.GENERATE', 'Generate'))
+			);
+
+			$form = new Form($this, 'ReportForm', $fields, $actions);
+			$form->loadDataFrom($template);
+			$form->addExtraClass('ReportForm');
+			return $form;
+			
 		}
 
 		return null;
@@ -191,7 +223,7 @@ class ReportPage_Controller extends Page_Controller {
 		// okay if we're generating we need to do a few things
 		// 1. clone the current template as a saved version
 		// 2. create the actual files
-		if ($this->data()->canEdit()) {
+		if ($this->data()->canEdit() || Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
 			$this->saveReportTemplate($data, $form);
 			
 			$currentTemplate = $this->data()->ReportTemplate();
