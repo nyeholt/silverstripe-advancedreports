@@ -10,7 +10,7 @@
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
  */
-class ReportPage extends Page implements PermissionProvider {
+class ReportPage extends Page {
     public static $db = array(
 		'ReportType' => 'Varchar(64)',
 	);
@@ -57,22 +57,6 @@ class ReportPage extends Page implements PermissionProvider {
 		return DataObject::get('AdvancedReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
 	}
 	
-	public function providePermissions() {
-		return array(
-			'EDIT_ADVANCED_REPORT' => array(
-				'name' => _t('AdvancedReport.EDIT', 'Create and edit Advanced Report pages'),
-				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
-				'help' => _t('AdvancedReport.ADVANCED_REPORTS_EDIT_HELP', 'Users with this permission can create new Report Pages from a Report Holder page'),
-				'sort' => 400
-			),
-			'GENERATE_ADVANCED_REPORT' => array(
-				'name' => _t('AdvancedReport.GENERATE', 'Generate an Advanced Report'),
-				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
-				'help' => _t('AdvancedReport.ADVANCED_REPORTS_GENERATE_HELP', 'Users with this permission can generate reports based on existing report templates via a frontend Report Page'),
-				'sort' => 400
-			),
-		);
-	}
 }
 
 class ReportPage_Controller extends Page_Controller {

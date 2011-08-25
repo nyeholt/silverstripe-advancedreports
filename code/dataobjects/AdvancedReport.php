@@ -15,7 +15,7 @@
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
  */
-class AdvancedReport extends DataObject {
+class AdvancedReport extends DataObject implements PermissionProvider {
 
 	/**
 	 * What conversion needs to occur? 
@@ -26,7 +26,7 @@ class AdvancedReport extends DataObject {
 
 	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List', 'IS' => 'IS', 'IS NOT' => 'IS NOT');
 
-    public static $db = array(
+	public static $db = array(
 		'Title'						=> 'Varchar(128)',
 		'GeneratedReportTitle'		=> 'Varchar(128)',
 		'Description'				=> 'Text',
@@ -137,13 +137,7 @@ class AdvancedReport extends DataObject {
 	 * @return fieldset
 	 */ 
 	function getCMSFields() {
-		$reportFields = new FieldSet();
-		$this->updateReportFields($reportFields);
-//
-//		$csv_file = $fields->fieldByName("Root.Main.CSVFile");
-//		$pdf_file = $fields->fieldByName("Root.Main.PDFFile");
-//		$html_file = $fields->fieldByName("Root.Main.HTMLFile");
-
+		
 		$fields = new FieldSet();
 		$fields->push(new TabSet("Root"));
 		
@@ -151,9 +145,7 @@ class AdvancedReport extends DataObject {
 			new TextField('Title', _t('AdvancedReport.TITLE', 'Title')),
 			new TextareaField('Description', _t('AdvancedReport.DESCRIPTION', 'Description'))
 		));
-		
-		$fields->addFieldsToTab("Root.Main", $reportFields);
-		
+
 		$reportField = new TableListField(
 			'Reports', 
 			'AdvancedReport',
@@ -178,13 +170,21 @@ class AdvancedReport extends DataObject {
 
 		$fields->addFieldsToTab('Root.Reports', array(
 			$reportField,
-			new TextField('GeneratedReportTitle', _t('AdvancedReport.GENERATED_TITLE', 'Title for generated report')),
-			new CheckboxField('GenerateReport', _t('AdvancedReport.GENERATE_REPORT', 'Generate Report')),
-				
+			new TextField('GeneratedReportTitle', _t('AdvancedReport.GENERATED_TITLE', 'Title for generated report'))
 		));
-		
+
+		if (Permission::check('GENERATE_ADVANCED_REPORT')) {
+			$fields->addFieldToTab('Root.Reports', new CheckboxField('GenerateReport', _t('AdvancedReport.GENERATE_REPORT', 'Generate Report')));
+		}
+
+		if (Permission::check('EDIT_ADVANCED_REPORT')) {
+			$reportFields = new FieldSet();
+			$this->updateReportFields($reportFields);
+			$fields->addFieldsToTab("Root.Settings", $reportFields);
+		}
+
 		$this->extend('updateCMSFields', $fields);
-		
+
 		return $fields;
 	}
 	
@@ -228,7 +228,7 @@ class AdvancedReport extends DataObject {
 			return $file->Link();
 		}
 	}
-	
+
 	/**
 	 * Abstract method; actual reports should define this. 
 	 */
@@ -358,7 +358,27 @@ class AdvancedReport extends DataObject {
 	public function getDataObjects() {
 		throw new Exception("Abstract method called; please implement getDataObjects()");
 	}
+	
+	/**
+	 * Return an array of FieldValuePrefix => Callable 
+	 * filters for changing the values of the condition value
+	 * 
+	 * This is so that you can do things like strtotime() in conditions for 
+	 * a date field, for example. 
+	 * 
+	 * Everything AFTER the prefix given here is passed through to the
+	 * callable, so you can handle the passing of parameters manually
+	 * if needed
+	 * 
+	 * @return array
+	 */
+	protected function getConditionFilters() {
+		$defaultFilters = new ConditionFilters();
 
+		return array(
+			'strtotime:'		=> array($defaultFilters, 'strtotimeDateValue')
+		);
+	}
 
 	/**
 	 * Generate a WHERE clause based on the input the user provided.
@@ -378,6 +398,9 @@ class AdvancedReport extends DataObject {
 		$vals = $this->ConditionValues->getValues();
 
 		$filter = array();
+		
+		$conditionFilters = $this->getConditionFilters();
+		
 		for ($i = 0, $c = count($fields); $i < $c; $i++) {
 			$field = $fields[$i];
 			if (!$ops[$i] || !$vals[$i]) {
@@ -402,6 +425,15 @@ class AdvancedReport extends DataObject {
 						$val = null;
 					}
 					break;
+				}
+			}
+			
+			if (is_array($conditionFilters) && count($conditionFilters)) {
+				foreach ($conditionFilters as $prefix => $callable) {
+					if (strpos($val, $prefix) === 0) {
+						$val = substr($val, strlen($prefix));
+						$val = call_user_func($callable, $val);
+					}
 				}
 			}
 
@@ -706,6 +738,39 @@ class AdvancedReport extends DataObject {
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 	
+	public function providePermissions() {
+		return array(
+			'EDIT_ADVANCED_REPORT' => array(
+				'name' => _t('AdvancedReport.EDIT', 'Create and edit Advanced Report pages'),
+				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
+				'help' => _t('AdvancedReport.ADVANCED_REPORTS_EDIT_HELP', 'Users with this permission can create new Report Pages from a Report Holder page'),
+				'sort' => 400
+			),
+			'GENERATE_ADVANCED_REPORT' => array(
+				'name' => _t('AdvancedReport.GENERATE', 'Generate an Advanced Report'),
+				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
+				'help' => _t('AdvancedReport.ADVANCED_REPORTS_GENERATE_HELP', 'Users with this permission can generate reports based on existing report templates via a frontend Report Page'),
+				'sort' => 400
+			),
+		);
+	}
+}
+
+class ConditionFilters {
+	public static $arg_sep = '|';
+	
+	public function strtotimeDateValue($value) {
+		$args = $this->getArgs($value);
+		if (!isset($args[1])) {
+			$args[1] = 'Y-m-d H:i:s';
+		}
+		
+		return date($args[1], strtotime($args[0]));
+	}
+	
+	protected function getArgs($str) {
+		return explode(self::$arg_sep, $str);
+	}
 }
 
 /**

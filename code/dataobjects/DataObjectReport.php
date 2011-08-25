@@ -23,8 +23,10 @@ class DataObjectReport extends AdvancedReport {
 			'Created' => 'Created',
 			'LastModified' => 'LastModified',
 		);
+
 		if ($this->ReportOn) {
-			$fields = Object::combined_static($this->ReportOn, 'db');
+			$dbfields = Object::combined_static($this->ReportOn, 'db');
+			$fields = array_merge($fields, $dbfields);
 			$fields = array_combine(array_keys($fields), array_keys($fields));
 		}
 		

@@ -5,15 +5,15 @@ a.reportDownloadLink[href$=".csv"] { padding: 0px 20px; background: url(images/p
 a.reportDownloadLink[href$=".html"] { padding: 0px 20px; background: url(images/html.png) no-repeat left center; }
 /*.reportData td { padding: 3px;}*/
 
-#Root_Main select { width: 120px; } /* Separate lines because ie6 is a horrendous piece of garbage */
-#Root_Main input[type=text] { width: 120px; }
+#Root_Settings select, #Root_Main select { width: 120px; } /* Separate lines because ie6 is a horrendous piece of garbage */
+#Root_Settings input[type=text] , #Root_Main input[type=text] { width: 120px; }
 
-#Root_Main .reportMultiField { overflow: auto; }
-#Root_Main .reportMultiField .fieldgroup label { display: none; }
-#Root_Main .reportMultiField .fieldgroupField { width: 140px; float: left; }
-#Root_Main .mvlistbox { height: 200px; }
-#Root_Main .middleColumn { float: left; }
-#Root_Main .fieldgroupField { display: block; }
+#Root_Settings .reportMultiField, #Root_Main .reportMultiField { overflow: auto; }
+#Root_Settings .reportMultiField .fieldgroup label , #Root_Main .reportMultiField .fieldgroup label { display: none; }
+#Root_Settings .reportMultiField .fieldgroupField, #Root_Main .reportMultiField .fieldgroupField { width: 140px; float: left; }
+#Root_Settings .mvlistbox, #Root_Main .mvlistbox { height: 200px; }
+#Root_Settings .middleColumn, #Root_Main .middleColumn { float: left; }
+#Root_Settings .fieldgroupField, #Root_Main .fieldgroupField { display: block; }
 
 .multivaluefieldlist input[type=text]{ padding: 1px; height: 20px; border: 2px inset #ccc; margin-bottom: 1px; }
 .multivaluefieldlist select  {padding: 1px; height: 23px; margin-bottom: 4px;}

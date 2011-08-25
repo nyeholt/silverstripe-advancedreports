@@ -1,3 +1,10 @@
+2011-08-25 v1.0.0
+-----------------
+
+* Added the ability to filter / bind condition values at the last minute for
+  conditions. Simply provide a prefix and a callable in getConditionFilters;
+  see AdvancedReport::getConditionFilters() for an example.
+* Moved the settings of the report to a separate tab
 
 2011-04-05 v0.1.2
 -----------------
