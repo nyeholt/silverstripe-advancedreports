@@ -60,10 +60,11 @@ table.reporttable tbody td {
 	margin: 0;
 	padding: 4pt;
 	border-top: 1px solid #000;
+	font-size: 8pt;
 }
 
 table.reporttable tbody td.noReportData {
-	border-top: none;
+/*	border-top: none;*/
 }
 
 h2.reportTableName { margin: 20px 0; page-break-before: always;}

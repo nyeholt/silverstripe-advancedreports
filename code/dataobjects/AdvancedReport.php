@@ -23,6 +23,13 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @var array
 	 */
 	public static $conversion_formats = array('pdf' => 'html');
+	
+	/**
+	 * Allows users to disable pdf gen, which requires a 3rd party module
+	 *
+	 * @var boolean
+	 */
+	public static $generate_pdf = true;
 
 	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List', 'IS' => 'IS', 'IS NOT' => 'IS NOT');
 
@@ -161,8 +168,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$reportField->setShowPagination(true);
 		
 		$links = '<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("csv")."\'>CSV</a> '.
-					'<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("pdf")."\'>PDF</a> '.
 					'<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("html")."\'>HTML</a> ';
+		
+		if (self::$generate_pdf) {
+			$links .= '<a class=\'reportDownloadLink\' target=\'blank\' href=\'".$getFileLink("pdf")."\'>PDF</a> ';
+		}
 		
 		$reportField->setFieldFormatting(array(
 			'ID' => $links,
@@ -213,9 +223,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		
 		$report->generateReport('html');
 		$report->generateReport('csv');
-		$report->generateReport('pdf');
+		if (self::$generate_pdf) {
+			$report->generateReport('pdf');
+		}
 	}
-	
+
 	/**
 	 * Get a link to a specific instance of this report. 
 	 * 
