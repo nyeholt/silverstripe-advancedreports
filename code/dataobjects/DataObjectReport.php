@@ -42,7 +42,7 @@ class DataObjectReport extends AdvancedReport {
 		unset($types[0]);
 		ksort($types);
 		
-		$fields->addFieldToTab('Root.Main', new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report On'), $types), 'Fields');
+		$fields->addFieldToTab('Root.Main', new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report On'), $types));
 		
 		return $fields;
 	}
