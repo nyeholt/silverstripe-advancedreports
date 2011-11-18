@@ -18,6 +18,10 @@ a.reportDownloadLink[href$=".html"] { padding: 0px 20px; background: url(images/
 .multivaluefieldlist input[type=text]{ padding: 1px; height: 20px; border: 2px inset #ccc; margin-bottom: 1px; }
 .multivaluefieldlist select  {padding: 1px; height: 23px; margin-bottom: 4px;}
 
+.mvkeyvallist li {
+	width: 300px;
+}
+
 /*#ReportList .reportPreviewLink { float: right;  padding-left: 18px; background: transparent url('images/html.png') no-repeat; }*/
 /*#ReportList { width: 60%; list-style-type: none; background-color: #EAECEE; padding: 1em; margin: 0; }*/
 /*#ReportList .reportTitle { font-size: 14pt; text-decoration: none; }*/

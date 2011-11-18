@@ -50,6 +50,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'AddInRows'					=> 'MultiValueField',	// which fields in each row should be added?
 		'AddCols'					=> 'MultiValueField',	// Which columns should be added ?
 		'NumericSort'				=> 'MultiValueField',	// columns to be numericly sorted
+		'ReportParams'				=> 'MultiValueField',	// provide some defaults for parameterised reports
 	);
 
 	static $field_labels = array(
@@ -110,7 +111,14 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			new MultiValueDropdownField('ConditionOps', _t('AdvancedReport.CONDITION_OPERATIONS', 'Op'), self::$allowed_conditions),
 			new MultiValueTextField('ConditionValues', _t('AdvancedReport.CONDITION_VALUES', 'Value'))
 		);
+		
 		$conditions->addExtraClass('reportMultiField');
+		
+		$params = new FieldGroup('Parameters',
+			new KeyValueField('ReportParams', _t('AdvancedReport.REPORT_PARAMETERS', 'Default report parameters'))
+		);
+		$params->addExtraClass('reportMultiField');
+
 		
 		$combofield = new FieldGroup('Sorting',
 			new MultiValueDropdownField('SortBy', _t('AdvancedReport.SORTED_BY', 'Sorted By'), $reportFields),
@@ -123,6 +131,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		
 		$fields->push($fieldsGroup);
 		$fields->push($conditions);
+		$fields->push($params);
 		$fields->push($combofield);
 		
 		$fields->push(new MultiValueDropdownField('NumericSort', _t('AdvancedReports.SORT_NUMERICALLY', 'Sort these fields numerically'), $this->getReportableFields()));
@@ -213,14 +222,13 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	
 	/**
 	 * Prepare and generate this report into report instances
-	 * 
 	 */
 	public function prepareAndGenerate() {
 		$report = $this->duplicate(false);
 		$report->ReportID = $this->ID;
 		$report->Title = $this->GeneratedReportTitle;
 		$report->write();
-		
+
 		$report->generateReport('html');
 		$report->generateReport('csv');
 		if (self::$generate_pdf) {
@@ -388,7 +396,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$defaultFilters = new ConditionFilters();
 
 		return array(
-			'strtotime:'		=> array($defaultFilters, 'strtotimeDateValue')
+			'strtotime:'		=> array($defaultFilters, 'strtotimeDateValue'),
+			'param:'			=> array($defaultFilters, 'paramValue'),
 		);
 	}
 
@@ -444,7 +453,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				foreach ($conditionFilters as $prefix => $callable) {
 					if (strpos($val, $prefix) === 0) {
 						$val = substr($val, strlen($prefix));
-						$val = call_user_func($callable, $val);
+						$val = call_user_func($callable, $val, $this);
 					}
 				}
 			}
@@ -573,6 +582,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @param String $format
 	 * @param boolean $store
 	 *				Whether to store the created report. 
+	 * @param array $parameters
+	 *				An array of parameters that will be used as dynamic replacements
 	 */
 	public function createReport($format='html', $store = false) {
 		Requirements::clear();
@@ -780,6 +791,25 @@ class ConditionFilters {
 		return date($args[1], strtotime($args[0]));
 	}
 	
+	public function paramValue($value, $report) {
+		$args = $this->getArgs($value);
+		$params = $report->ReportParams;
+		if ($params) {
+			$params = $params->getValues();
+		}
+		
+		if (isset($_GET[$args[0]])) {
+			return $_GET[$args[0]];
+		}
+
+		if ($params && isset($args[0]) && isset($params[$args[0]])) {
+			return $params[$args[0]];
+		}
+		
+		
+		return '';
+	}
+
 	protected function getArgs($str) {
 		return explode(self::$arg_sep, $str);
 	}

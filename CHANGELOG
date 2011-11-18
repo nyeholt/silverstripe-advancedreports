@@ -1,3 +1,10 @@
+2011-11-18 v1.1.0
+-----------------
+
+* Added ability to specify parameters for conditions that get bound
+  by either a GET value, or by specifying a default in the 
+  ReportParams key value field
+
 2011-08-25 v1.0.0
 -----------------
 
