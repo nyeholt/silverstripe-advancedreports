@@ -205,7 +205,6 @@ abstract class ReportFormatter {
 			if (isset($this->headers[self::ADD_IN_ROWS_TOTAL])) {
 				$addCols[] = self::ADD_IN_ROWS_TOTAL;
 			}
-
 			
 			foreach ($this->data as $tableName => $data) {
 				$sums = array();
@@ -221,7 +220,12 @@ abstract class ReportFormatter {
 								$titleColumn = $prevField;
 							}
 							$cur = isset($sums[$field]) ? $sums[$field] : 0;
-							$sums[$field] = $cur + $value;
+							if (method_exists($this->report, 'columnAdder')) {
+								$sums[$field] = $this->report->columnAdder($field, $cur, $value);
+							} else {
+								$sums[$field] = $cur + $value;
+							}
+							
 						} else {
 							$sums[$field] = '';
 						}

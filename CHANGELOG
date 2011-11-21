@@ -1,3 +1,10 @@
+2011-11-21 v1.1.1
+-----------------
+
+* Added ability to specify your own addition method for items being summed in 
+  rows so to provide the ability to handle adding non-numeric types more 
+  gracefully (eg times)
+
 2011-11-18 v1.1.0
 -----------------
 
