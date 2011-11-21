@@ -136,12 +136,17 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		
 		$fields->push(new MultiValueDropdownField('NumericSort', _t('AdvancedReports.SORT_NUMERICALLY', 'Sort these fields numerically'), $this->getReportableFields()));
 		
+		$convertedFields = array();
+		foreach ($reportFields as $k => $v) {
+			$convertedFields[$this->dottedFieldToUnique($k)] = $v;
+		}
+		
 		$fields->push(new FieldGroup('Formatting', 
 			new DropdownField('PaginateBy', _t('AdvancedReport.PAGINATE_BY', 'Paginate By'), $paginateFields),
 			new TextField('PageHeader', _t('AdvancedReport.PAGED_HEADER', 'Header text (use $name for the page name)'), '$name'),
-			new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $reportFields),
-			new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $reportFields),
-			new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $reportFields)
+			new MultiValueDropdownField('AddInRows', _t('AdvancedReport.ADD_IN_ROWS', 'Add these columns for each row'), $convertedFields),
+			new MultiValueDropdownField('AddCols', _t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'), $convertedFields),
+			new MultiValueDropdownField('ClearColumns', _t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'), $convertedFields)
 		));
 	}
 	
@@ -312,7 +317,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Get the selected report fields in a format suitable to be put in an
 	 * SQL select (an array format)
-	 *
+	 * 
 	 * @return array
 	 */
 	protected function getReportFieldsForQuery() {
