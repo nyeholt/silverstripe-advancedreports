@@ -1,3 +1,8 @@
+2011-11-28 v1.1.2
+-----------------
+
+* Dotted fields are escaped properly on pagination vars
+
 2011-11-21 v1.1.1
 -----------------
 

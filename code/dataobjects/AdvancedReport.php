@@ -280,7 +280,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @param string $field
 	 */
-	protected function dottedFieldToUnique($field) {
+	public function dottedFieldToUnique($field) {
 		return str_replace('.', '_', $field);
 	}
 

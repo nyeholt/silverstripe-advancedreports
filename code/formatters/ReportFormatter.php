@@ -117,7 +117,7 @@ abstract class ReportFormatter {
 
 		$tableName = self::DEFAULT_TABLE_NAME;
 
-		$paginateBy = $this->report->PaginateBy;
+		$paginateBy = $this->report->dottedFieldToUnique($this->report->PaginateBy);
 		$headerTemplate = $this->report->PageHeader ? $this->report->PageHeader : '$name';
 
 		$addCols = $this->report->AddInRows && count($this->report->AddInRows->getValues()) ? $this->report->AddInRows->getValues() : null;
