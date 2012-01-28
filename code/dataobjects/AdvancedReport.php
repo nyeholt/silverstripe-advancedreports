@@ -599,11 +599,12 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			$renderFormat = self::$conversion_formats[$format];
 		}
 
-		$content = "Formatter for $format not found!";
-		$formatter = ucfirst($renderFormat).'ReportFormatter';
-		if (class_exists($formatter)) {
-			$formatter = new $formatter($this);
+		$formatter = $this->getReportFormatter($renderFormat);
+
+		if($formatter) {
 			$content = $formatter->format();
+		} else {
+			$content = "Formatter for '$renderFormat' not found.";
 		}
 
 		$classes = array_reverse(ClassInfo::ancestry(get_class($this)));
@@ -704,6 +705,20 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		// make sure to set the appropriate ID
 		$this->$field = $file->ID;
 		$this->write();
+	}
+
+	/**
+	 * Returns a report formatter instance for an output format.
+	 *
+	 * @param  string $format
+	 * @return ReportFormatter
+	 */
+	protected function getReportFormatter($format) {
+		$class = ucfirst($format) . 'ReportFormatter';
+
+		if(class_exists($class)) {
+			return new $class($this);
+		}
 	}
 
 	/**
