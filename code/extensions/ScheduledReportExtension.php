@@ -15,6 +15,7 @@ class ScheduledReportExtension extends DataObjectDecorator {
 					'FirstGeneration'		=> 'SS_Datetime',
 					'RegenerateEvery'		=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
 					'RegenerateFree'		=> 'Varchar',
+					'SendReportTo'			=> 'Varchar(255)',
 				),
 				'has_one' => array(
 					'ScheduledJob'			=> 'QueuedJobDescriptor',
@@ -34,7 +35,8 @@ class ScheduledReportExtension extends DataObjectDecorator {
 				new TextField('ScheduledTitle', _t('AdvancedReports.SCHEDULED_TITLE', 'Title for scheduled report')),
 				$dt = new Datetimefield('FirstGeneration', _t('AdvancedReports.FIRST_GENERATION', 'First generation')),
 				new DropdownField('RegenerateEvery', _t('AdvancedReports.REGENERATE_EVERY', 'Regenerate every'), $this->owner->dbObject('RegenerateEvery')->enumValues()),
-				new TextField('RegenerateFree', _t('AdvancedReports.REGENERATE_FREE','Scheduled (in strtotime format from first generation)'))
+				new TextField('RegenerateFree', _t('AdvancedReports.REGENERATE_FREE','Scheduled (in strtotime format from first generation)')),
+				new TextField('SendReportTo', _t('AdvancedReports.SEND_TO', 'Send to email addresses')),
 			));
 
 			if ($this->owner->ScheduledJobID) {
@@ -46,12 +48,10 @@ class ScheduledReportExtension extends DataObjectDecorator {
 			
 			$dt->getDateField()->setConfig('showcalendar', true);
 			$dt->getTimeField()->setConfig('showdropdown', true);
-
+			
 		} else {
 			$fields->addFieldToTab('Root.Schedule', new LiteralField('WARNING', 'You must install the Queued Jobs module to schedule reports'));
 		}
-		
-		
 	}
 	
 	public function onBeforeWrite() {
@@ -79,7 +79,5 @@ class ScheduledReportExtension extends DataObjectDecorator {
 				$this->owner->ScheduledJobID = singleton('QueuedJobService')->queueJob($job, $time);
 			}
 		}
-
-		
 	}
 }

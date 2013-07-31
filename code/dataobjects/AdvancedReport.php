@@ -239,6 +239,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		if (self::$generate_pdf) {
 			$report->generateReport('pdf');
 		}
+		
+		return $report;
 	}
 
 	/**

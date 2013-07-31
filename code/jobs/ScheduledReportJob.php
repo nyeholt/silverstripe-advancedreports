@@ -35,7 +35,7 @@ class ScheduledReportJob extends AbstractQueuedJob {
 		$report = $this->getReport();
 		if ($report) {
 			$report->GeneratedReportTitle = $report->ScheduledTitle;
-			$report->prepareAndGenerate();
+			$generated = $report->prepareAndGenerate();
 			$report->GeneratedReportTitle = $report->Title;
 			
 			// figure out what our rescheduled date should be
@@ -48,6 +48,15 @@ class ScheduledReportJob extends AbstractQueuedJob {
 			$nextId = singleton('QueuedJobService')->queueJob(new ScheduledReportJob($report, $this->timesGenerated + 1), $nextGen);
 			$report->ScheduledJobID = $nextId;
 			$report->write();
+			
+			if (strlen($report->SendReportTo)) {
+				$email = new Email();
+				$email->setTo($report->SendReportTo);
+				$email->setBody("Please see attached");
+				$email->setSubject($generated->Title);
+				$email->attachFile($generated->PDFFile()->getFullPath(), $generated->PDFFile()->Filename, 'application/pdf');
+				$email->send();
+			}
 		}
 
 		$this->currentStep++;
