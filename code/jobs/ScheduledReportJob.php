@@ -44,7 +44,6 @@ class ScheduledReportJob extends AbstractQueuedJob {
 				$timeStr = '+1 ' . $report->RegenerateEvery;
 			}
 			
-			
 			$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
 			$nextId = singleton('QueuedJobService')->queueJob(new ScheduledReportJob($report, $this->timesGenerated + 1), $nextGen);
 			$report->ScheduledJobID = $nextId;

@@ -27,6 +27,13 @@ class DataObjectReport extends AdvancedReport {
 		if ($this->ReportOn) {
 			$dbfields = Object::combined_static($this->ReportOn, 'db');
 			$fields = array_merge($fields, $dbfields);
+			
+			$ones = Object::combined_static($this->ReportOn, 'has_one');
+			
+			foreach ($ones as $name => $type) {
+				$fields[$name . 'ID'] = $name . 'ID';
+			}
+
 			$fields = array_combine(array_keys($fields), array_keys($fields));
 		}
 		
