@@ -33,7 +33,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List', 'IS' => 'IS', 'IS NOT' => 'IS NOT');
 
-	public static $db = array(
+	private static $db = array(
 		'Title'						=> 'Varchar(128)',
 		'GeneratedReportTitle'		=> 'Varchar(128)',
 		'Description'				=> 'Text',
@@ -53,39 +53,38 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'ReportParams'				=> 'MultiValueField',	// provide some defaults for parameterised reports
 	);
 
-	static $field_labels = array(
+	private $field_labels = array(
 		'ReportFields' => 'Fields',
 		'ReportHeaders' => 'Field Headers',
 		'ConditionFields' => 'Conditions',
 		'PaginateBy' => 'Paginate By',						
 		'SortBy' => 'Sort Field',
 		'SortDir' => 'Sort Order',
-		);	
-	
-	public static $has_one = array(
+	);
+
+	private static $has_one = array(
 		'Report' => 'AdvancedReport',			// never set for the 'template' report for a page, but used to
 												// list all the generated reports. 
 		'HTMLFile' => 'File',
 		'CSVFile' => 'File',
 		'PDFFile' => 'File',
 	);
-	
-	public static $has_many = array(
+
+	private static $has_many = array(
 		'Reports'		=> 'AdvancedReport',
 	);
-	
-	static $default_sort = "Title ASC";
-	
-	public static $searchable_fields = array(
+
+	private static $default_sort = "Title ASC";
+
+	private static $searchable_fields = array(
 		'Title',
 		'Description',
 	);
-	
-	public static $summary_fields = array(
+
+	private static $summary_fields = array(
 		'Title',
 		'Description'
 	);
-	
 
 	/**
 	 * Empty method for now - need to hook it up with fields properly 

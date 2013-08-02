@@ -8,8 +8,8 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class DataObjectReport extends AdvancedReport {
-	
-	public static $db = array(
+
+	private static $db = array(
 		'ReportOn'			=> 'Varchar(64)',
 	);
 
