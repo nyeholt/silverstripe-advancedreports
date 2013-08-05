@@ -95,12 +95,14 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @return FieldList
 	 */
 	public function getCMSFields() {
+		Requirements::css('advancedreports/css/cms.css');
+
 		$fields = new FieldList(array(
 			new TabSet('Root', new Tab(
 				'Main',
 				new GridField(
-					'Reports',
-					_t('AdvancedReports.GENERATED_REPORTS', 'Generated Reports'),
+					'GeneratedReports',
+					_t('AdvancedReport.GENERATED_REPORTS', 'Generated Reports'),
 					$this->Reports()->sort('Created', 'DESC'),
 					$config = GridFieldConfig_Base::create()
 				)
@@ -117,9 +119,41 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$columns->setFieldFormatting(array(
 			'Links' => function($value, $item) {
-				return 'TODO';
+				$result = '';
+				$links = array('html', 'csv');
+
+				if(AdvancedReport::$generate_pdf) {
+					$links[] = 'pdf';
+				}
+
+				foreach($links as $type) {
+					$result .= sprintf(
+						'<a href="%s" target="_blank" class="advanced-report-download-link">%s</a>',
+						$item->getFileLink($type),
+						strtoupper($type)
+					);
+				}
+
+				return $result;
 			}
 		));
+
+		if($this->isInDB() && $this->canGenerate()) {
+			$fields->addFieldsToTab(
+				'Root.Main',
+				array(
+					DropdownField::create('PreviewFormat')
+						->setTitle(_t('AdvancedReport.PREVIEW_FORMAT', 'Preview format'))
+						->setSource(array(
+							'html' => 'HTML', 'csv' => 'CSV', 'pdf' => 'PDF'
+						)),
+					TextField::create('GeneratedReportTitle')
+						->setTitle(_t('AdvancedReport.GENERATED_TITLE', 'Generated report title'))
+						->setValue($this->Title)
+				),
+				'GeneratedReports'
+			);
+		}
 
 		if($this->canEdit()) {
 			$fields->addFieldsToTab('Root.Settings', $this->getSettingsFields());
@@ -136,6 +170,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @return FieldList
 	 */
 	public function getSettingsFields() {
+		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+		Requirements::javascript('advancedreports/javascript/advanced-report-settings.js');
+
 		$reportable = $this->getReportableFields();
 		$converted = array();
 
@@ -156,6 +193,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			)
 		);
 		$fieldsGroup->setName('FieldsGroup');
+		$fieldsGroup->addExtraClass('advanced-report-fields dropdown');
 
 		$conditionsGroup = new FieldGroup(
 			'Conditions',
@@ -175,6 +213,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			)
 		);
 		$conditionsGroup->setName('ConditionsGroup');
+		$conditionsGroup->addExtraClass('dropdown');
 
 		$sortGroup = new FieldGroup(
 			'Sort',
@@ -193,15 +232,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			)
 		);
 		$sortGroup->setName('SortGroup');
+		$sortGroup->addExtraClass('dropdown');
 
 		$fields = new FieldList(
 			new TextField('Title', _t('AdvancedReport.TITLE', 'Title')),
-			$fieldsGroup,
-			$conditionsGroup,
 			new TextareaField(
 				'Description',
 				_t('AdvancedReport.DESCRIPTION', 'Description')
 			),
+			$fieldsGroup,
+			$conditionsGroup,
 			new KeyValueField(
 				'ReportParams',
 				_t('AdvancedReport.REPORT_PARAMETERS', 'Default report parameters')
