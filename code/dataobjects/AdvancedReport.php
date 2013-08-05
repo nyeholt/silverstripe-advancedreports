@@ -774,53 +774,27 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$folderName = 'advanced-reports/'.$this->ReportID.'/'.$this->ID;
 		return Folder::findOrMake($folderName);
 	}
-	
-	/**
-	 * @param Member $member
-	 * @return boolean
-	 */
+
 	public function canView($member = null) {
-		if (!$member) {
-			$member = Member::currentUser();
-		}
-		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+		return Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
-	/**
-	 * @param Member $member
-	 * @return boolean
-	 */
 	public function canEdit($member = null) {
-		if (!$member) {
-			$member = Member::currentUser();
-		}
-		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+		return Permission::check('EDIT_ADVANCED_REPORT', 'any', $member);
 	}
 
-	/**
-	 * @param Member $member
-	 * @return boolean
-	 */
 	public function canDelete($member = null) {
-		if (!$member) {
-			$member = Member::currentUser();
-		}
-		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+		return Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
-	/**
-	 * @todo Should canCreate be a static method?
-	 *
-	 * @param Member $member
-	 * @return boolean
-	 */
 	public function canCreate($member = null) {
-		if (!$member) {
-			$member = Member::currentUser();
-		}
-		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+		return Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
-	
+
+	public function canGenerate($member = null) {
+		return Permission::check('GENERATE_ADVANCED_REPORT', 'any', $member);
+	}
+
 	public function providePermissions() {
 		return array(
 			'EDIT_ADVANCED_REPORT' => array(
