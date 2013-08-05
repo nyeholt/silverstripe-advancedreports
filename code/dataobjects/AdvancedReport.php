@@ -762,17 +762,12 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Gets the report folder needed for storing the report files
+	 * Gets the report folder used for storing generated reports.
 	 *
-	 * @param String $format
+	 * @return string
 	 */
 	protected function getReportFolder() {
-		$id = $this->ReportID;
-		if (!$id) {
-			$id = 'preview';
-		}
-		$folderName = 'advanced-reports/'.$this->ReportID.'/'.$this->ID;
-		return Folder::findOrMake($folderName);
+		return Folder::find_or_make("advanced-reports/$this->ReportID/$this->ID");
 	}
 
 	public function canView($member = null) {
