@@ -1,3 +1,8 @@
+2013-08-04 v1.2.1
+-----------------
+
+* Fixed reference to LastModified that should be LastEdited
+
 2013-07-31 v1.2.0
 -----------------
 

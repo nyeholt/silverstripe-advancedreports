@@ -21,7 +21,7 @@ class DataObjectReport extends AdvancedReport {
 		$fields = array(
 			'ID' => 'ID',
 			'Created' => 'Created',
-			'LastModified' => 'LastModified',
+			'LastEdited' => 'LastEdited',
 		);
 
 		if ($this->ReportOn) {
