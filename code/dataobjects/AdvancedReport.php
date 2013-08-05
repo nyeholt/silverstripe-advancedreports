@@ -724,8 +724,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$storeIn = $this->getReportFolder();
 
 		// SS hates spaces in here :(
-		$name = ereg_replace(' +','-',trim($this->Title));
-		$name = ereg_replace('[^A-Za-z0-9.+_\-]','',$name);
+		$name = preg_replace('/ +/', '-', trim($this->Title));
+		$name = preg_replace('/[^A-Za-z0-9.+_-]/', '', $name);
 		$name = $name . '.' . $format;
 		
 		$childId = $storeIn->constructChild($name);
