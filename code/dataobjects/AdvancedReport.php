@@ -658,7 +658,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			$templates[] = $cls . '_' . $renderFormat;
 		}
 
-		$date = DBField::create('SS_Datetime', time());
+		$date = DBField::create_field('SS_Datetime', time());
 		$this->Text = nl2br($this->Text);
 		
 		$reportData = array('ReportContent' => $content, 'Format' => $format, 'Now' => $date);
