@@ -41,16 +41,19 @@ class DataObjectReport extends AdvancedReport {
 		
 		return $fields;
 	}
-	
-	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		
+
+	public function getSettingsFields() {
+		$fields = parent::getSettingsFields();
 		$types = ClassInfo::subclassesFor('DataObject');
-		unset($types[0]);
+
+		array_shift($types);
 		ksort($types);
-		
-		$fields->addFieldToTab('Root.Main', new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report On'), $types));
-		
+
+		$fields->insertAfter(
+			new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report on'), $types),
+			'Title'
+		);
+
 		return $fields;
 	}
 
