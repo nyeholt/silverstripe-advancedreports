@@ -61,13 +61,12 @@ class DataObjectReport extends AdvancedReport {
 		return $fields;
 	}
 
-	public function  getDataObjects() {
-		$sortBy = $this->getSort();
-		
-		$items = DataObject::get($this->ReportOn, $this->getFilter(), $sortBy);
-		return $items;
+	public function getDataObjects() {
+		return DataList::create($this->ReportOn)
+			->where($this->getFilter())
+			->sort($this->getSort());
 	}
-	
+
 	/**
 	 * Gets the filter we need for the report
 	 *
