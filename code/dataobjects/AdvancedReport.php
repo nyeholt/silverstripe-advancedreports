@@ -291,19 +291,6 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Always set generate report to '0' whenever we save. 
-	 */
-	public function onBeforeWrite() {
-		parent::onBeforeWrite();
-		if ($this->GenerateReport) {
-			$this->GenerateReport = 0;
-			$this->prepareAndGenerate();
-		}
-		
-		$this->GeneratedReportTitle = $this->Title;
-	}
-	
-	/**
 	 * Prepare and generate this report into report instances
 	 */
 	public function prepareAndGenerate() {
