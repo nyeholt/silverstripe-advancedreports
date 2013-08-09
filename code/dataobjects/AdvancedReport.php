@@ -182,15 +182,13 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$fieldsGroup = new FieldGroup(
 			'Fields',
-			new MultiValueDropdownField(
-				'ReportFields',
-				_t('AdvancedReport.REPORT_FIELDS', 'Report Fields'),
-				$reportable
-			),
-			new MultiValueTextField(
-				'ReportHeaders',
-				_t('AdvancedReport.REPORT_HEADERS', 'Headers')
-			)
+			MultiValueDropdownField::create('ReportFields')
+				->setTitle(_t('AdvancedReport.REPORT_FIELDS', 'Report Fields'))
+				->setSource($reportable)
+				->addExtraClass('advanced-report-field-names'),
+			MultiValueTextField::create('ReportHeaders')
+				->setTitle(_t('AdvancedReport.REPORT_HEADERS', 'Headers'))
+				->addExtraClass('advanced-report-field-headers')
 		);
 		$fieldsGroup->setName('FieldsGroup');
 		$fieldsGroup->addExtraClass('advanced-report-fields dropdown');
