@@ -380,65 +380,6 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Get the selected report fields in a format suitable to be put in an
-	 * SQL select (an array format)
-	 * 
-	 * @return array
-	 */
-	protected function getReportFieldsForQuery() {
-		$fields = $this->ReportFields->getValues();
-		$reportFields = $this->getReportableFields();
-		$sortVals = $this->SortBy->getValues();
-		
-		if (!$sortVals) {
-			$sortVals = array();
-		}
-
-		$toSelect = array();
-		$selected = array();
-		
-		// make sure our sortvals are in the query too
-		foreach ($sortVals as $sortOpt) {
-			if (!in_array($sortOpt, $fields)) {
-				$fields[] = $sortOpt;
-			}
-		}
-		
-		foreach ($fields as $field) {
-			if (isset($reportFields[$field])) {
-				$fieldName = $field;
-				if (strpos($field, '.')) {
-					$parts = explode('.', $field);
-					$sep = '';
-					$quotedField = implode('"."', $parts);
-					
-					if (isset($selected[$fieldName])) {
-						$selected[$fieldName]++;
-						$field = $field . '_' . $selected[$fieldName];
-					}
-					
-					$field = '"'.$quotedField . '" AS "' . $this->dottedFieldToUnique($field) . '"';
-				} else {
-					if (isset($selected[$fieldName])) {
-						$selected[$fieldName]++;
-						$field = '"'.$field.'" AS "'.$field . '_' . $selected[$fieldName].'"';
-					} else {
-						$field = '"'.$field.'"';
-					}
-				}
-				$toSelect[] = $field;
-			}
-
-			if (!isset($selected[$fieldName])) {
-				$selected[$fieldName] = 1;
-			}
-		}
-
-		return $toSelect;
-	}
-
-
-	/**
 	 * Retrieve the raw data objects set for this report
 	 *
 	 * Note that the "DataObjects" don't necessarily need to implement DataObjectInterface;
