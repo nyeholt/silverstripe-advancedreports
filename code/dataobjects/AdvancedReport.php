@@ -126,6 +126,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					_t('AdvancedReport.GENERATED_REPORTS', 'Generated Reports'),
 					$this->Reports()->sort('Created', 'DESC'),
 					$config = GridFieldConfig_Base::create()
+						->addComponent(new GridFieldDeleteAction())
 				)
 			))
 		));
