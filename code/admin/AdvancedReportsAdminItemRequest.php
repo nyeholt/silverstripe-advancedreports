@@ -41,7 +41,16 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 	}
 
 	public function generate($data, $form) {
-		$this->record->prepareAndGenerate();
+		$report = $this->record;
+
+		if(!empty($data['GeneratedReportTitle'])) {
+			$title = $data['GeneratedReportTitle'];
+		} else {
+			$title = $report->Title;
+		}
+
+		$report->GeneratedReportTitle = $title;
+		$report->prepareAndGenerate();
 
 		return Controller::curr()->redirect($this->Link());
 	}
