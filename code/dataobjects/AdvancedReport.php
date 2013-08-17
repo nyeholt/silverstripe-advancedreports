@@ -26,12 +26,15 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	private static $conversion_formats = array('pdf' => 'html');
 
 	/**
-	 * Allows users to disable pdf gen, which requires a 3rd party module
+	 * Enables or disables PDF generation using the PDF rendition module.
+	 *
+	 * By default PDF generation is enabled if the PDF rendition module is
+	 * installed.
 	 *
 	 * @var bool
 	 * @config
 	 */
-	private static $generate_pdf = true;
+	private static $generate_pdf = false;
 
 	/**
 	 * A list of allowed filter conditions.
