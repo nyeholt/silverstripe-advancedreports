@@ -8,6 +8,8 @@ class AdvancedReportsAdmin extends ModelAdmin {
 
 	private static $url_segment = 'advanced-reports';
 
+	private static $menu_icon = 'advancedreports/images/bar-chart.png';
+
 	private static $model_importers = array();
 
 	private $managedModels;
