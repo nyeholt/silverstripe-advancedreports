@@ -585,23 +585,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		return array();
 	}
 
-
 	/**
-	 * Get any field mapping options.
-	 * 
-	 * These should be of the form
-	 * 
-	 * <pre>
-	 * array(
-	 *		'FieldName' => 'functioncall($rawValue)'
-	 * );
-	 * </pre>
-	 * 
-	 * The value of the array will be eval'd with the $rawValue available for
-	 * formatting the default value.
-	 * 
+	 * Gets field formatting functions used for applying transformations to
+	 * values.
+	 *
+	 * The formatters should be a map of field name to callable. The callable
+	 * is passed the original value and current record.
+	 *
+	 * @return array
 	 */
-	public function getFieldMapping() {
+	public function getFieldFormatting() {
 		return array();
 	}
 

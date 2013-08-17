@@ -110,7 +110,7 @@ abstract class ReportFormatter {
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
-		$mapping = $this->report->getFieldMapping();
+		$formatters = $this->report->getFieldFormatting();
 
 		$i = 0;
 		$previousVals = array();
@@ -156,18 +156,11 @@ abstract class ReportFormatter {
 					}
 				}
 
-				$rawValue = is_object($item) ? $item->$field : $item[$field];
+				$value = is_object($item) ? $item->$field : $item[$field];
 
-				$value = '';
-
-				// based on the field name we've been given, lets
-				// see if we can resolve it to a value on our data object
-				if (isset($mapping[$field])) {
-					$format = $mapping[$field];
-					$outputFormat = $this->getOutputFormat();
-					eval('$value = ' . $format . ';');
-				} else if ($rawValue) {
-					$value = $rawValue;
+				if(isset($formatters[$field])) {
+					$formatter = $formatters[$field];
+					$value = $formatter($value, $item);
 				}
 
 				if (in_array($field, $colsToBlank)) {
