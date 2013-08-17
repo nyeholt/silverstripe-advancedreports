@@ -18,20 +18,38 @@
 class AdvancedReport extends DataObject implements PermissionProvider {
 
 	/**
-	 * What conversion needs to occur? 
-	 * 
+	 * What conversion needs to occur?
+	 *
 	 * @var array
+	 * @config
 	 */
-	public static $conversion_formats = array('pdf' => 'html');
-	
+	private static $conversion_formats = array('pdf' => 'html');
+
 	/**
 	 * Allows users to disable pdf gen, which requires a 3rd party module
 	 *
-	 * @var boolean
+	 * @var bool
+	 * @config
 	 */
-	public static $generate_pdf = true;
+	private static $generate_pdf = true;
 
-	public static $allowed_conditions = array('=' => '=', '<>' => '!=', '>=' => '>=', '>' => '>', '<' => '<', '<=' => '<=', 'IN' => 'In List', 'IS' => 'IS', 'IS NOT' => 'IS NOT');
+	/**
+	 * A list of allowed filter conditions.
+	 *
+	 * @var array
+	 * @config
+	 */
+	private static $allowed_conditions = array(
+		'=' => '=',
+		'<>' => '!=',
+		'>=' => '>=',
+		'>' => '>',
+		'<' => '<',
+		'<=' => '<=',
+		'IN' => 'In List',
+		'IS' => 'IS',
+		'IS NOT' => 'IS NOT'
+	);
 
 	private static $db = array(
 		'Title'						=> 'Varchar(128)',
@@ -122,7 +140,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$result = '';
 				$links = array('html', 'csv');
 
-				if(AdvancedReport::$generate_pdf) {
+				if(Config::inst()->get('AdvancedReport', 'generate_pdf')) {
 					$links[] = 'pdf';
 				}
 
@@ -203,7 +221,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			new MultiValueDropdownField(
 				'ConditionOps',
 				_t('AdvancedReport.CONDITION_OPERATIONS', 'Operation'),
-				self::$allowed_conditions
+				$this->config()->allowed_conditions
 			),
 			new MultiValueTextField(
 				'ConditionValues',
@@ -299,10 +317,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$report->generateReport('html');
 		$report->generateReport('csv');
-		if (self::$generate_pdf) {
+
+		if($this->config()->generate_pdf) {
 			$report->generateReport('pdf');
 		}
-		
+
 		return $report;
 	}
 
@@ -312,11 +331,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @param String $type 
 	 */
 	public function getFileLink($type) {
-		$prop = strtoupper($type).'File';
-		if (isset(self::$has_one[$prop])) {
-			$file = $this->$prop();
-			return $file->Link();
-		}
+		return $this->{strtoupper($type) . 'File'}()->Link();
 	}
 
 	/**
@@ -430,9 +445,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$vals = $this->ConditionValues->getValues();
 
 		$filter = array();
-		
+		$conditions = $this->config()->allowed_conditions;
 		$conditionFilters = $this->getConditionFilters();
-		
+
 		for ($i = 0, $c = count($fields); $i < $c; $i++) {
 			$field = $fields[$i];
 			if (!$ops[$i] || !$vals[$i]) {
@@ -440,7 +455,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			}
 
 			$op = $ops[$i];
-			if (!isset(self::$allowed_conditions[$op])) {
+			if (!isset($conditions[$op])) {
 				break;
 			}
 
@@ -600,9 +615,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		Requirements::clear();
 		$convertTo = null;
 		$renderFormat = $format;
-		if (isset(self::$conversion_formats[$format])) {
+		$conversions = $this->config()->conversion_formats;
+
+		if (isset($conversions[$format])) {
 			$convertTo = 'pdf';
-			$renderFormat = self::$conversion_formats[$format];
+			$renderFormat = $conversions[$format];
 		}
 
 		$formatter = $this->getReportFormatter($renderFormat);
@@ -775,8 +792,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 }
 
 class ConditionFilters {
-	public static $arg_sep = '|';
-	
+	const ARGUMENT_SEPARATOR = '|';
+
 	public function strtotimeDateValue($value) {
 		$args = $this->getArgs($value);
 		if (!isset($args[1])) {
@@ -806,7 +823,7 @@ class ConditionFilters {
 	}
 
 	protected function getArgs($str) {
-		return explode(self::$arg_sep, $str);
+		return explode(self::ARGUMENT_SEPARATOR, $str);
 	}
 }
 
