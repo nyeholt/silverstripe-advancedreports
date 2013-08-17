@@ -10,13 +10,13 @@ a.advanced-report-download-link {
 }
 
 a.advanced-report-download-link[href$=".html"] {
-	background-image: url(images/html.png);
+	background-image: url(../images/html.png);
 }
 
 a.advanced-report-download-link[href$=".csv"] {
-	background-image: url(images/page_excel.png);
+	background-image: url(../images/csv.png);
 }
 
 a.advanced-report-download-link[href$=".pdf"] {
-	background-image: url(images/page_white_acrobat.png);
+	background-image: url(../images/pdf.png);
 }
