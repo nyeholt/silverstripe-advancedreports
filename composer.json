@@ -11,8 +11,8 @@
 		}
 	],
 	"require": {
-		"silverstripe/cms": ">=3.1.x-dev,<4.0",
-		"silverstripe/multivaluefield": "dev-master"
+		"silverstripe/cms": "~3.1",
+		"silverstripe/multivaluefield": "*"
 	},
 	"suggest": {
 		"silverstripe/queuedjobs": "Allows scheduling report generation"
