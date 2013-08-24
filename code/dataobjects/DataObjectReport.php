@@ -8,8 +8,8 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class DataObjectReport extends AdvancedReport {
-	
-	public static $db = array(
+
+	private static $db = array(
 		'ReportOn'			=> 'Varchar(64)',
 	);
 
@@ -24,43 +24,49 @@ class DataObjectReport extends AdvancedReport {
 			'LastEdited' => 'LastEdited',
 		);
 
-		if ($this->ReportOn) {
-			$dbfields = Object::combined_static($this->ReportOn, 'db');
-			$fields = array_merge($fields, $dbfields);
-			
-			$ones = Object::combined_static($this->ReportOn, 'has_one');
-			
-			foreach ($ones as $name => $type) {
-				$fields[$name . 'ID'] = $name . 'ID';
+		if($this->ReportOn) {
+			$config = Config::inst()->forClass($this->ReportOn);
+
+			$db = $config->get('db');
+			$hasOne = $config->get('has_one');
+
+			if($db) {
+				$fields = array_merge($fields, $db);
+			}
+
+			if($hasOne) foreach(array_keys($hasOne) as $name) {
+				$fields[$name . 'ID'] = true;
 			}
 
 			$fields = array_combine(array_keys($fields), array_keys($fields));
 		}
-		
+
 		ksort($fields);
-		
-		return $fields;
-	}
-	
-	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		
-		$types = ClassInfo::subclassesFor('DataObject');
-		unset($types[0]);
-		ksort($types);
-		
-		$fields->addFieldToTab('Root.Main', new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report On'), $types));
-		
+
 		return $fields;
 	}
 
-	public function  getDataObjects() {
-		$sortBy = $this->getSort();
-		
-		$items = DataObject::get($this->ReportOn, $this->getFilter(), $sortBy);
-		return $items;
+	public function getSettingsFields() {
+		$fields = parent::getSettingsFields();
+		$types = ClassInfo::subclassesFor('DataObject');
+
+		array_shift($types);
+		ksort($types);
+
+		$fields->insertAfter(
+			new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report on'), $types),
+			'Title'
+		);
+
+		return $fields;
 	}
-	
+
+	public function getDataObjects() {
+		return DataList::create($this->ReportOn)
+			->where($this->getFilter())
+			->sort($this->getSort());
+	}
+
 	/**
 	 * Gets the filter we need for the report
 	 *

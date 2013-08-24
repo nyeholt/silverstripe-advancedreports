@@ -1,0 +1,5 @@
+only:
+  moduleexists: pdfrendition
+---
+AdvancedReport:
+  generate_pdf: true
