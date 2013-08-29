@@ -29,10 +29,21 @@ class CsvReportFormatter extends ReportFormatter {
 	 */
 	protected function createBody($tableName, $tableData) {
 		$body = array();
+		
+		$formatters = $this->report->FieldFormatting;
+		$formatting = array();
+		if ($formatters && count($formatters->getValues())) {
+			foreach ($formatters->getValues() as $field => $class) {
+				$formatting[$field] = new $class;
+			}
+		}
 
 		foreach ($tableData as $row) {
 			$csvRow = array();
 			foreach ($row as $field => $value) {
+				if (isset($formatting[$field])) {
+					$value = $formatting[$field]->format($value);
+				}
 				$csvRow[] = $value;
 			}
 			$body[] = '"'.implode('","', $csvRow).'"';

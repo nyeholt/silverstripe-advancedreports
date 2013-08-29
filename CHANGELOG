@@ -1,3 +1,9 @@
+2013-08-26 v1.3.1
+-----------------
+
+* Added support for custom field formatters to allowed displayed values to be
+  overridden from code
+
 2013-08-04 v1.2.1
 -----------------
 

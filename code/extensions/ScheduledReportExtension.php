@@ -65,7 +65,10 @@ class ScheduledReportExtension extends DataObjectDecorator {
 			$changed = isset($changed['FirstGeneration']) || isset($changed['RegenerateEvery']) || isset($changed['RegenerateFree']);
 
 			if ($changed && $this->owner->ScheduledJobID) {
-				$this->owner->ScheduledJob()->delete();
+				if ($this->owner->ScheduledJob()->ID) {
+					$this->owner->ScheduledJob()->delete();
+				}
+				
 				$this->owner->ScheduledJobID = 0;
 			}
 

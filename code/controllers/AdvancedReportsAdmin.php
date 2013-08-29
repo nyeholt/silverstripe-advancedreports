@@ -28,7 +28,9 @@ class AdvancedReportsAdmin extends ModelAdmin {
 		if (!count(self::$managed_models) || self::$managed_models[0] == 'DataObjectReport') {
 			$classes = ClassInfo::subclassesFor('AdvancedReport');
 			array_shift($classes);
-			self::$managed_models = array_keys($classes);
+			$classes = array_merge(array_keys($classes), self::$managed_models);
+			$classes = array_unique($classes);
+			self::$managed_models = $classes; // array_combine($classes, $classes);
 		}
 		
 		parent::__construct();
@@ -50,7 +52,7 @@ class AdvancedReportsAdmin_RecordController extends ModelAdmin_RecordController 
 	public function EditForm() {
 		$form = parent::EditForm();
 		
-		if ($this->currentRecord->ID) {
+		if ($this->currentRecord->ID && $this->currentRecord instanceof AdvancedReport) {
 			$fields = $form->Fields();
 			$link = $this->Link('preview');
 			$link = '<a href="' . $link . '" target="_blank">' . _t('AdvancedReports.PREVIEW', 'Preview').'</a>';
@@ -69,8 +71,10 @@ class AdvancedReportsAdmin_RecordController extends ModelAdmin_RecordController 
 			$output = $this->currentRecord->createReport('html');
 		}
 
-		if ($output->content) {
+		if (is_object($output)) {
 			echo $output->content;
+		} else {
+			echo $output;
 		}
 	}
 }
@@ -83,7 +87,10 @@ class AdvancedReportsAdmin_CollectionController extends ModelAdmin_CollectionCon
 	 */
 	function getSearchQuery($searchCriteria) {
 		$query = parent::getSearchQuery($searchCriteria);
-		$query->where('"ReportID" = 0');
+		if (is_subclass_of($this->modelClass, 'AdvancedReport')) {
+			$query->where('"ReportID" = 0');
+		}
+		
 		return $query;
 	}
 }

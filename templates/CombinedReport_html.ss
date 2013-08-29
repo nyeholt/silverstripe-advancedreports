@@ -95,11 +95,19 @@ div.logo { background: transparent url(images/report_logo.png) no-repeat;  width
 			<p class="reportDescription">$Description.Raw</p>
 			<p>Generated $LastEdited.Nice</p>
 		</div>
-		<div class="landscape newPage">
-			<% if Format = pdf %>
-			<% include PdfHeaderFooter %>
-			<% end_if %>
-			$ReportContent
-		</div>
+		
+		<% control Reports %>
+
+			<div class="landscape newPage">
+				<h2>$Title</h2>
+				<% if Format = pdf %>
+				<% include PdfHeaderFooter %>
+				<% end_if %>
+				$ReportContent
+			</div>
+		
+		<% end_control %>
+
+
 	</body>
 </html>
