@@ -6,25 +6,20 @@
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class ScheduledReportExtension extends DataObjectDecorator {
-	public function extraStatics() {
-		if (class_exists('AbstractQueuedJob')) {
-			return array(
-				'db' => array(
-					'ScheduledTitle'		=> 'Varchar(255)',
-					'FirstGeneration'		=> 'SS_Datetime',
-					'RegenerateEvery'		=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
-					'RegenerateFree'		=> 'Varchar',
-					'SendReportTo'			=> 'Varchar(255)',
-				),
-				'has_one' => array(
-					'ScheduledJob'			=> 'QueuedJobDescriptor',
-				)
-			);
-		}
-		return array();
-	}
+class ScheduledReportExtension extends DataExtension {
 	
+	private static $db = array(
+		'ScheduledTitle'		=> 'Varchar(255)',
+		'FirstGeneration'		=> 'SS_Datetime',
+		'RegenerateEvery'		=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
+		'RegenerateFree'		=> 'Varchar',
+		'SendReportTo'			=> 'Varchar(255)',
+	);
+	
+	private static $has_one = array(
+		'ScheduledJob'			=> 'QueuedJobDescriptor',
+	);
+
 	/**
 	 *
 	 * @param FieldSet $fields 

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * A Report Page is a frontend interface to creating and generating reports. 
  * 
@@ -11,257 +10,230 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class ReportPage extends Page {
-    public static $db = array(
-		'ReportType' => 'Varchar(64)',
+
+	private static $db = array(
+		'ReportType' => 'Varchar(64)'
 	);
 
-	public static $has_one = array(
-		'ReportTemplate' => 'AdvancedReport',
+	private static $has_one = array(
+		'ReportTemplate' => 'AdvancedReport'
 	);
+
+	private static $dependencies = array(
+		'reportsService' => '%$AdvancedReportsServiceInterface'
+	);
+
+	/**
+	 * @var AdvancedReportsServiceInterface
+	 */
+	private $reportsService;
+
+	public function setReportsService(AdvancedReportsServiceInterface $service) {
+		$this->reportsService = $service;
+	}
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$types = ClassInfo::subclassesFor('AdvancedReport');
-		array_shift($types);
-		array_unshift($types, '');
-		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ReportType', _t('AdvancedReport.REPORT_TYPE', 'Report Type'), $types), 'Content');
+
+		$fields->addFieldToTab(
+			'Root.Main',
+			DropdownField::create('ReportType')
+				->setTitle(_t('ReportPage.REPORT_TYPE', 'Report type'))
+				->setSource($this->reportsService->getReportTypes())
+				->setHasEmptyDefault(true),
+			'Content'
+		);
+
 		return $fields;
 	}
 
 	/**
-	 * The "default" structure used for this report when auto generating etc
+	 * Creates a report template instance if one does not exist.
 	 */
-	public function onBeforeWrite() {
+	protected function onBeforeWrite() {
 		parent::onBeforeWrite();
 
-		if (!$this->ReportTemplateID && $this->ReportType && ClassInfo::exists($this->ReportType)) {
+		if(!$this->ReportTemplateID && $this->ReportType && ClassInfo::exists($this->ReportType)) {
 			$template = Object::create($this->ReportType);
-
-			// create the template first. This is what all actual reports are based on when they're generated, either
-			// automatically or by the 'generate' button
-			$template->Title = $this->Title . ' Preview';
+			$template->Title = $this->Title;
 			$template->write();
 
 			$this->ReportTemplateID = $template->ID;
 		}
 	}
 
-	/**
-	 * This is needed because a has_many to AdvancedReport seems to think it needs
-	 * a parent ID. I haven't got time to figure out why SilverStripe thinks there's a parent ID involved,
-	 * so be gone with it.
-	 *
-	 * @return DataObjectSet
-	 */
-	public function getReports() {
-		return DataObject::get('AdvancedReport', '"ReportID" = '.((int) $this->ID), 'Created DESC');
-	}
-	
 }
 
 class ReportPage_Controller extends Page_Controller {
-	public static $allowed_actions = array(
-		'ReportForm',
-		'DeleteSavedReportForm',
-		'htmlpreview',
-		'delete',
+
+	private static $allowed_actions = array(
+		'settings',
+		'preview',
+		'GenerateForm',
+		'SettingsForm',
+		'DeleteGeneratedReportForm'
 	);
 
-	public function init() {
-		parent::init();
-		Requirements::themedCSS('ReportPage');
-		Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js');
-		Requirements::javascript(THIRDPARTY_DIR.'/jquery-livequery/jquery.livequery.js');
-		Requirements::javascript('advancedreports/javascript/advancedreports.js');
-
-	}
-
-	public function ReportForm() {
-		$template = $this->data()->ReportTemplate();
-		if ($template && $template->ID && $this->data()->canEdit()) {
-			$fields = new FieldSet();
-			$template->updateReportFields($fields);
-
-			$fields->push(new TextField('Title', _t('ReportPage.NEW_TITLE', 'Title for generated reports')));
-
-			$actions = new FieldSet(
-				new FormAction('save', _t('AdvancedReports.SAVE', 'Save')),
-				new FormAction('preview', _t('AdvancedReports.PREVIEW', 'Preview')),
-				new FormAction('generate', _t('AdvancedReports.GENERATE', 'Generate')),
-				new FormAction('delete', _t('AdvancedReports.DELETE', 'Delete'))
-			);
-
-			$form = new Form($this, 'ReportForm', $fields, $actions);
-			$form->loadDataFrom($template);
-			$form->addExtraClass('ReportForm');
-			return $form;
-		} else if (Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
-			$fields = new FieldSet();
-			$fields->push(new TextField('Title', _t('ReportPage.NEW_TITLE', 'Title for generated reports')));
-			
-			$actions = new FieldSet(
-				new FormAction('preview', _t('AdvancedReports.PREVIEW', 'Preview')),
-				new FormAction('generate', _t('AdvancedReports.GENERATE', 'Generate'))
-			);
-
-			$form = new Form($this, 'ReportForm', $fields, $actions);
-			$form->loadDataFrom($template);
-			$form->addExtraClass('ReportForm');
-			return $form;
-			
+	public function settings() {
+		if(!$this->CanEditTemplate()) {
+			return Security::permissionFailure($this);
 		}
 
-		return null;
+		return $this->renderWith('Page', array(
+			'Title' => _t('ReportPage.EDIT_REPORT_SETTINGS', 'Edit Report Settings'),
+			'Form' => $this->SettingsForm()
+		));
 	}
 
-	public function DeleteSavedReportForm() {
-		$fields = new FieldSet(
-			new HiddenField('ReportID')
+	public function preview() {
+		if(!$this->CanGenerateReport()) {
+			return Security::permissionFailure();
+		}
+
+		return $this->ReportTemplate()->createReport('html')->content;
+	}
+
+	public function GenerateForm() {
+		if(!$this->CanGenerateReport()) {
+			return null;
+		}
+
+		return new Form(
+			$this,
+			'GenerateForm',
+			new FieldList(
+				new TextField(
+					'Title',
+					_t('AdvancedReports.GENERATED_REPORT_TITLE', 'Generated report title'),
+					$this->ReportTemplate()->Title
+				)
+			),
+			new FieldList(
+				new FormAction('doPreview', _t('AdvancedReports.PREVIEW', 'Preview')),
+				new FormAction('doGenerate', _t('AdvancedReports.GENERATE', 'Generate'))
+			),
+			new RequiredFields('Title')
+		);
+	}
+
+	public function doPreview($data) {
+		$report = clone $this->ReportTemplate();
+		$report->Title = $data['Title'];
+
+		return $report->createReport('html')->content;
+	}
+
+	public function doGenerate($data, $form) {
+		$report = clone $this->ReportTemplate();
+
+		if(!empty($data['Title'])) {
+			$report->GeneratedReportTitle = $data['Title'];
+		}
+
+		$report->prepareAndGenerate();
+
+		return $this->redirect($this->Link());
+	}
+
+	public function SettingsForm() {
+		if(!$this->CanEditTemplate()) {
+			return null;
+		}
+
+		$form = new Form(
+			$this,
+			'SettingsForm',
+			$this->ReportTemplate()->getSettingsFields(),
+			new FieldList(
+				new FormAction('doSaveSettings', _t('ReportPage.SAVE_SETTINGS', 'Save Settings'))
+			)
+		);
+		$form->loadDataFrom($this->ReportTemplate());
+
+		return $form;
+	}
+
+	public function doSaveSettings($data, Form $form) {
+		$template = $form->getRecord();
+		$form->saveInto($template);
+		$template->write();
+
+		$form->sessionMessage(
+			_t('ReportPage.SETTINGS_SAVED', 'The report settings have been saved'),
+			'good'
 		);
 
-		return new Form($this, 'DeleteSavedReportForm', $fields, new FieldSet(new FormAction('deletereport', '')));
+		return $this->redirectBack();
+	}
+
+	public function DeleteGeneratedReportForm() {
+		return new Form(
+			$this,
+			'DeleteGeneratedReportForm',
+			new FieldList(new HiddenField('ID')),
+			new FieldList(new FormAction('doDeleteGeneratedReport', _t('ReportPage.DELETE', 'Delete'))),
+			new RequiredFields('ID')
+		);
+	}
+
+	public function doDeleteGeneratedReport($data, $form) {
+		if(!$this->ReportTemplateID) {
+			$this->httpError(404);
+		}
+
+		$report = $this->ReportTemplate()->Reports()->byID($data['ID']);
+
+		if(!$report) {
+			$this->httpError(403);
+		}
+
+		if(!$report->canDelete()) {
+			return Security::permissionFailure($this);
+		}
+
+		$report->delete();
+
+		return $this->redirectBack();
 	}
 
 	/**
-	 * OHHH sorry about this hack. 
+	 * Gets a list of viewable reports, with attached delete forms.
 	 *
-	 * @return String
+	 * @return ArrayList
 	 */
-	public function SecurityID() {
-		return Session::get('SecurityID');
-	}
+	public function GeneratedReports() {
+		$result = new ArrayList();
 
-	/**
-	 * Update the report template definition
-	 * 
-	 * @param array $data
-	 * @param Form $form
-	 * @param SS_HTTPRequest $request 
-	 */
-	public function save($data, Form $form, $request) {
-		if ($this->data()->canEdit()) {
-			$this->saveReportTemplate($data, $form);
-		}
-		$this->redirect($this->data()->Link());
-	}
-
-	/**
-	 * Save the current report template
-	 *
-	 * @param array $data
-	 * @param Form $form
-	 */
-	protected function saveReportTemplate($data, $form) {
-		$template = $this->data()->ReportTemplate();
-		if ($template && $template->ID) {
-			$form->saveInto($template);
-			$template->write();
-		}
-	}
-
-	/**
-	 * Redirects the user to a preview of the current form, if it was generated
-	 * right now. 
-	 *
-	 * @param array $data
-	 * @param Form $form
-	 * @param SS_HTTPRequest $request
-	 */
-	public function preview($data, Form $form, $request) {
-		if ($this->data()->canEdit() || Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
-			$this->saveReportTemplate($data, $form);
-		}
-		
-		$this->redirect($this->data()->Link('htmlpreview'));
-	}
-
-	/**
-	 * View a report in HTML format
-	 */
-	public function htmlpreview() {
-		// create the HTML report and spit it out immediately
-		$format = isset($_REQUEST['f']) ? $_REQUEST['f'] : 'html';
-		$output = $this->data()->ReportTemplate()->createReport($format);
-		if ($output->filename) {
-			// do nothing
+		if(!$this->ReportTemplateID) {
+			return $result;
 		}
 
-		if ($output->content) {
-			echo $output->content;
-		}
-	}
-
-	/**
-	 * Generates the given report.
-	 *
-	 * This creates an HTML, CSV and PDF version of the report, stores the
-	 * report in its list of 'saved' reports, and clears up the 'template'
-	 * to be reused.
-	 * 
-	 * @param array $data
-	 * @param Form $form
-	 * @param SS_HTTPRequest $request
-	 */
-	public function generate(array $data, Form $form, $request) {
-		// okay if we're generating we need to do a few things
-		// 1. clone the current template as a saved version
-		// 2. create the actual files
-		if ($this->data()->canEdit() || Permission::check('GENERATE_ADVANCED_REPORT', 'any')) {
-			$this->saveReportTemplate($data, $form);
-			
-			$currentTemplate = $this->data()->ReportTemplate();
-
-			$report = $currentTemplate->duplicate(false);
-//			$report->Title = isset($data['ReportTitle']) ? $data['ReportTitle'] : $this->data()->Title . ' ' . date('Y-m-d');
-			$report->ReportID = $this->data()->ID;
-			$report->write();
-
-			$report->generateReport('html');
-			$report->generateReport('csv');
-			$report->generateReport('pdf');
-		}
-
-		$this->redirect($this->data()->Link());
-	}
-
-	/**
-	 * Delete an actual report page.
-	 *
-	 * @param array $data
-	 * @param Form $form
-	 * @param SS_HTTPRequest $request
-	 */
-	public function delete($data, $form, $request) {
-		if ($this->data()->canDelete()) {
-			$parent = $this->data()->Parent();
-			$this->data()->doUnpublish();
-			$this->data()->delete();
-			$this->redirect($parent->Link());
-		} else {
-			$form->sessionMessage(_t('ReportPage.DELETE_WARNING', 'You do not have permission to delete the report'), 'warning');
-			$this->redirect($this->data()->Link());
-		}
-	}
-
-	/**
-	 * Delete a previously saved generated report
-	 *
-	 * @param array $data
-	 * @param Form $form
-	 * @param SS_HTTPRequest $request
-	 */
-	public function deletereport($data, $form, $request) {
-		if ($this->data()->canDelete()) {
-			$reportId = isset($data['ReportID']) ? $data['ReportID'] : null;
-			if ($reportId) {
-				$report = DataObject::get_by_id('AdvancedReport', $reportId);
-				if ($report) {
-					$report->delete();
-				}
+		foreach($this->ReportTemplate()->Reports() as $report) {
+			if(!$report->canView()) {
+				continue;
 			}
-		}
-		
 
-		$this->redirect($this->data()->Link());
+			if($report->canDelete()) {
+				$form = $this->DeleteGeneratedReportForm();
+				$form->loadDataFrom($report);
+
+				$report = $report->customise(array(
+					'DeleteForm' => $form
+				));
+			}
+
+			$result->push($report);
+		}
+
+		return $result;
 	}
+
+	public function CanEditTemplate() {
+		return $this->ReportTemplateID && $this->ReportTemplate()->canEdit();
+	}
+
+	public function CanGenerateReport() {
+		return $this->ReportTemplateID && $this->ReportTemplate()->canGenerate();
+	}
+
 }

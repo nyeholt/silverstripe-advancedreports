@@ -1,0 +1,6 @@
+only:
+  moduleexists: queuedjobs
+---
+AdvancedReport:
+  extensions:
+    - ScheduledAdvancedReportExtension

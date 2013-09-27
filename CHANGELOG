@@ -4,6 +4,15 @@
 * Added support for custom field formatters to allowed displayed values to be
   overridden from code
 
+2013-08-25 v2.0.0
+-----------------
+
+* Upgrade to SS3 compatibility.
+* Report settings fields are now generated in a `getSettingsFields` method,
+  rather than using the `updateReportsSettingsFields` system.
+* The field formatting system has changed from an using evals to using
+  callbacks.
+
 2013-08-04 v1.2.1
 -----------------
 

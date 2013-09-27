@@ -1,92 +1,89 @@
 <?php
-
 /**
- *
- * @author marcus@silverstripe.com.au
- * @license http://silverstripe.org/bsd-license/
+ * Lists and allows creating reports in the front end.
  */
 class ReportHolder extends Page {
-	public static $allowed_children = array(
+
+	private static $allowed_children = array(
 		'ReportPage',
 	);
 
-    public function getReports() {
-		return $this->Children();
-	}
 }
 
 class ReportHolder_Controller extends Page_Controller {
-	public function init() {
-		parent::init();
-		Requirements::themedCSS('ReportPage');
-	}
 
-	public function index() {
-		if (Versioned::current_stage() == 'Stage') {
-			$this->redirect($this->data()->Link().'?stage=Live');
-			return;
-		}
-
-		return array();
-	}
+	private static $allowed_actions = array(
+		'Form'
+	);
 
 	public function Form() {
-		if ($this->data()->canEdit() || Permission::check('EDIT_ADVANCED_REPORT', 'any')) {
-			$classes = ClassInfo::subclassesFor('AdvancedReport');
-			array_shift($classes);
-			//array_unshift($classes, '');
+		if(!singleton('AdvancedReport')->canCreate()) {
+			return null;
+		}
 
-			$classTitles = array('' => '');
-			foreach ($classes as $class) {
-				$classTitles[$class] = Object::create($class)->singular_name();
-			}
+		$classes = ClassInfo::subclassesFor('AdvancedReport');
+		$titles = array();
 
-			$fields = new FieldSet(
-				new TextField('ReportName', _t('ReportHolder.REPORT_TITLE', 'Title')),
-				new TextareaField('ReportDescription', _t('ReportHolder.REPORT_DESCRIPTION', 'Description')),
-				new DropdownField('ReportType', _t('ReportHolder.REPORT_TYPE', 'Type'), $classTitles)
+		array_shift($classes);
+
+		foreach($classes as $class) {
+			$titles[$class] = singleton($class)->singular_name();
+		}
+
+		return new Form(
+			$this,
+			'Form',
+			new FieldList(
+				new TextField('Title', _t('ReportHolder.TITLE', 'Title')),
+				new TextareaField('Description', _t('ReportHolder.DESCRIPTION', 'Description')),
+				DropdownField::create('ClassName')
+					->setTitle(_t('ReportHolder.TYPE', 'Type'))
+					->setSource($titles)
+					->setHasEmptyDefault(true)
+			),
+			new FieldList(
+				new FormAction('doCreate', _t('ReportHolder.CREATE', 'Create'))
+			),
+			new RequiredFields('Title', 'ClassName')
+		);
+	}
+
+	public function doCreate($data, $form) {
+		if(!singleton('AdvancedReport')->canCreate()) {
+			return Security::permissionFailure($this);
+		}
+
+		$data = $form->getData();
+
+		$description = $data['Description'];
+		$class = $data['ClassName'];
+
+		if(!is_subclass_of($class, 'AdvancedReport')) {
+			$form->addErrorMessage(
+				'ClassName',
+				_t('ReportHolder.INVALID_TYPE', 'An invalid report type was selected'),
+				'required'
 			);
 
-			$actions = new FieldSet(new FormAction('createreport', _t('ReportHolder.CREATE_REPORT', 'Create')));
-			$form = new Form($this, 'Form', $fields, $actions, new RequiredFields('ReportName', 'ReportType'));
-			$form->addExtraClass('newReportForm');
-			return $form;
+			return $this->redirectBack();
 		}
+
+		$page = new ReportPage();
+
+		$page->update(array(
+			'Title' => $data['Title'],
+			'Content' => $description ? "<p>$description</p>" : '',
+			'ReportType' => $class,
+			'ParentID' => $this->data()->ID
+		));
+
+		$page->writeToStage('Stage');
+
+		if(Versioned::current_stage() == Versioned::get_live_stage()) {
+			$page->doPublish();
+		}
+
+		return $this->redirect($page->Link());
 	}
 
-	/**
-	 * Create a new report
-	 *
-	 * @param array  $data
-	 * @param Form $form
-	 */
-	public function createreport($data, $form) {
-		// assume a user's okay if they can edit the reportholder
-		// @TODO have a new create permission here?
-		if ($this->data()->canEdit()) {
-			$type = $data['ReportType'];
-			$classes = ClassInfo::subclassesFor('AdvancedReport');
-			if (!in_array($type, $classes)) {
-				throw new Exception("Invalid report type");
-			}
-
-			$report = new ReportPage();
-
-			$report->Title = $data['ReportName'];
-			$report->MetaDescription = isset($data['ReportDescription']) ? $data['ReportDescription'] : '';
-			$report->ReportType = $type;
-			$report->ParentID = $this->data()->ID;
-
-			$oldMode = Versioned::get_reading_mode();
-			Versioned::reading_stage('Stage');
-			$report->write();
-			$report->doPublish();
-			Versioned::reading_stage('Live');
-			$this->redirect($report->Link());
-			
-		} else {
-			$form->sessionMessage(_t('ReporHolder.NO_PERMISSION', 'You do not have permission to do that'), 'warning');
-			$this->redirect($this->data()->Link());
-		}
-	}
 }

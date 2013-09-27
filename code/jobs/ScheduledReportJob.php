@@ -1,65 +1,77 @@
 <?php
-
 /**
- * Description of ScheduledReportJob
- *
- * @author marcus@silverstripe.com.au
- * @license BSD License http://silverstripe.org/bsd-license/
+ * Schedules an {@link AdvancedReport} for future generation.
  */
 class ScheduledReportJob extends AbstractQueuedJob {
-	
-	public function __construct($report = null, $timesGenerated = 0) {
-		if ($report) {
-			$this->reportID = $report->ID;
-			// captured so we have a unique hash generated for this job 
-			$this->timesGenerated = $timesGenerated;
 
+	public function __construct($report = null, $timesGenerated = 0) {
+		if($report) {
+			$this->reportID = $report->ID;
+			$this->timesGenerated = $timesGenerated;
 			$this->totalSteps = 1;
 		}
 	}
-	
-	public function getReport() {
-		return DataObject::get_by_id('AdvancedReport', $this->reportID);
-	}
-	
-	public function getTitle() {
-		return 'Regenerate report '.$this->getReport()->ScheduledTitle;
-	}
-	
 
-	public function setup() {
-		
+	/**
+	 * @return AdvancedReport
+	 */
+	public function getReport() {
+		return AdvancedReport::get()->byID($this->reportID);
 	}
-	
+
+	public function getTitle() {
+		return 'Generate Report ' . $this->getReport()->ScheduledTitle;
+	}
+
 	public function process() {
+		$service = singleton('QueuedJobService');
 		$report = $this->getReport();
-		if ($report) {
-			$report->GeneratedReportTitle = $report->ScheduledTitle;
-			$generated = $report->prepareAndGenerate();
-			$report->GeneratedReportTitle = $report->Title;
-			
-			// figure out what our rescheduled date should be
-			$timeStr = $report->RegenerateFree;
-			if ($report->RegenerateEvery) {
-				$timeStr = '+1 ' . $report->RegenerateEvery;
+
+		if(!$report) {
+			$this->currentStep++;
+			$this->isComplete = true;
+
+			return;
+		}
+
+		$clone = clone $report;
+		$clone->GeneratedReportTitle = $report->ScheduledTitle;
+
+		$result = $clone->prepareAndGenerate();
+
+		if($report->ScheduleEvery) {
+			if($report->ScheduleEvery == 'Custom') {
+				$interval = $report->ScheduleEveryCustom;
+			} else {
+				$interval = $report->ScheduleEvery;
 			}
-			
-			$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
-			$nextId = singleton('QueuedJobService')->queueJob(new ScheduledReportJob($report, $this->timesGenerated + 1), $nextGen);
-			$report->ScheduledJobID = $nextId;
-			$report->write();
-			
-			if (strlen($report->SendReportTo)) {
-				$email = new Email();
-				$email->setTo($report->SendReportTo);
-				$email->setBody("Please see attached");
-				$email->setSubject($generated->Title);
-				$email->attachFile($generated->PDFFile()->getFullPath(), $generated->PDFFile()->Filename, 'application/pdf');
-				$email->send();
-			}
+
+			$next = $service->queueJob(
+				new ScheduledReportJob($report, $this->timesGenerated + 1),
+				date('Y-m-d H:i:s', strtotime("+1 $interval"))
+			);
+
+			$report->QueuedJobID = $next;
+		} else {
+			$report->Scheduled = false;
+			$report->QueuedJobID = 0;
+		}
+
+		$report->write();
+
+		if($report->EmailScheduledTo) {
+			$email = new Email();
+			$email->setTo($report->EmailScheduledTo);
+			$email->setSubject($result->Title);
+			$email->setBody(_t(
+				'ScheduledReportJob.SEE_ATTACHED_REPORT', 'Please see the attached report file'
+			));
+			$email->attachFile($result->PDFFile()->getFullPath(), $result->PDFFile()->Filename, 'application/pdf');
+			$email->send();
 		}
 
 		$this->currentStep++;
 		$this->isComplete = true;
 	}
+
 }
