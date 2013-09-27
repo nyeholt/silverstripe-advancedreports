@@ -299,10 +299,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				_t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'),
 				$converted
 			),
-			new KeyValueField(
+			$kv = new KeyValueField(
 				'FieldFormatting', 
 				_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'), 
-				$convertedFields, 
+				$converted, 
 				$fmtrs
 			),
 			new MultiValueDropdownField(
@@ -311,7 +311,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$converted
 			)
 		);
-
+		
 		if($this->hasMethod('updateReportFields')) {
 			Deprecation::notice(
 				'3.0',
