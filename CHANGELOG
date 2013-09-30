@@ -1,3 +1,9 @@
+2013-09-30 v1.4.0
+-----------------
+
+* Added further parsing of default param value through the 'filter' mechanism 
+  for param based conditions
+
 2013-08-26 v1.3.1
 -----------------
 
