@@ -494,20 +494,32 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				}
 			}
 			
-			if (is_array($conditionFilters) && count($conditionFilters)) {
-				foreach ($conditionFilters as $prefix => $callable) {
-					if (strpos($originalVal, $prefix) === 0) {
-						$val = substr($originalVal, strlen($prefix));
-						$val = call_user_func($callable, $originalVal, $this);
-					}
-				}
-			}
-
+			$val = $this->applyFiltersToValue($originalVal);
+			
 			$filter[$field . ' ' . $op] = $val;
 		}
 		
 
 		return singleton('FRUtils')->dbQuote($filter);
+	}
+	
+	/**
+	 * Apply some filters to a condition value for use in a query
+	 * 
+	 * @param string $originalVal
+	 * @return string
+	 */
+	public function applyFiltersToValue($originalVal) {
+		$filters = $this->getConditionFilters();
+		
+		foreach ($filters as $prefix => $callable) {
+			if (strpos($originalVal, $prefix) === 0) {
+				$val = substr($originalVal, strlen($prefix));
+				return call_user_func($callable, $val, $this);
+			}
+		}
+
+		return $originalVal;
 	}
 
 
@@ -842,7 +854,7 @@ class ConditionFilters {
 		}
 
 		if ($params && isset($args[0]) && isset($params[$args[0]])) {
-			return $params[$args[0]];
+			return $report->applyFiltersToValue($params[$args[0]]);
 		}
 		
 		
