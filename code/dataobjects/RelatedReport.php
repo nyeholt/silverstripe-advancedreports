@@ -60,4 +60,16 @@ class RelatedReport extends DataObject  {
 		}
 		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
+	
+	public function canView($member = null) {
+		return $this->CombinedReport()->canView($member);
+	}
+	
+	public function canEdit($member = null) {
+		return $this->CombinedReport()->canEdit($member);
+	}
+	
+	public function canDelete($member = null) {
+		return $this->CombinedReport()->canDelete($member);
+	}
 }

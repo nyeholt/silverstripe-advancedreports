@@ -1,3 +1,10 @@
+2013-10-07 v2.1.1
+-----------------
+
+* Fixed can* methods for RelatedReport
+* Fixed how default parameters are passed through for combined report
+
+
 2013-09-30 v2.1.0
 -----------------
 
