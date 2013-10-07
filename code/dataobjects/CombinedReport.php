@@ -114,6 +114,8 @@ class CombinedReport extends AdvancedReport {
 			
 			if ($params) {
 				$params = $params->getValues();
+				$baseParams = $report->ReportParams->getValues();
+				$params = array_merge($baseParams, $params);
 				$report->ReportParams = $params;
 			}
 			
