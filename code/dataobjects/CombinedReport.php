@@ -7,12 +7,12 @@
  * @license BSD License http://www.silverstripe.org/bsd-license
  */
 class CombinedReport extends AdvancedReport {
-	public static $db = array(
+	private static $db = array(
 		'Title'						=> 'Varchar(255)',
 		'Description'				=> 'Text',
 	);
 	
-	public static $has_many = array(
+	private static $has_many = array(
 		'ChildReports'		=> 'RelatedReport',
 	);
 	
