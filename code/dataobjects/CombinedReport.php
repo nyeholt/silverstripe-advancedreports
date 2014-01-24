@@ -30,7 +30,8 @@ class CombinedReport extends AdvancedReport {
 		$fields->addFieldToTab('Root.Main', new TextareaField('Description'));
 
 		if ($this->ID) {
-			$fields->addFieldToTab('Root.Main', new OrderableComplexTableField($this, 'ChildReports', 'RelatedReport', null, null, '"CombinedReportID" = ' . $this->ID)); 
+			// $fields->addFieldToTab('Root.Main', new OrderableComplexTableField($this, 'ChildReports', 'RelatedReport', null, null, '"CombinedReportID" = ' . $this->ID)); 
+			$fields->addFieldToTab('Root.Main', new GridField('ChildReports', 'Related Reports', RelatedReport::get())); 
 		} else {
 			$fields->addFieldToTab('Root.Main', new LiteralField('Notice', 'Please save before adding related reports'));
 		}
