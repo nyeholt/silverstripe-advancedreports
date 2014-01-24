@@ -7,18 +7,18 @@
  * @license BSD License http://www.silverstripe.org/bsd-license
  */
 class RelatedReport extends DataObject  {
-	public static $db = array(
+	private static $db = array(
 		'Title'			=> 'Varchar',
 		'Parameters'	=> 'MultiValueField',
 		'Sort'			=> 'Int',
 	);
 	
-	public static $has_one = array(
+	private static $has_one = array(
 		'CombinedReport'		=> 'CombinedReport',
 		'Report'				=> 'AdvancedReport',
 	);
 	
-	public static $summary_fields = array(
+	private static $summary_fields = array(
 		'Report.Title'
 	);
 	
