@@ -675,15 +675,17 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$output = $this->customise($reportData)->renderWith($templates);
 
-		if (!$output) {
+		if (!$output->value) {
 			// put_contents fails if it's an empty string... 
-			$output = " ";
+			$output->value = " ";
 		}
 
 		if (!$convertTo) {
 			if ($store) {
 				// stick it in a temp file?
-				$outputFile = tempnam(TEMP_FOLDER, $format);
+				// $outputFile = tempnam(TEMP_FOLDER, $format);
+				$outputFile = uniqid('Report',true) . '.' . $format;
+				
 				if (file_put_contents($outputFile, $output)) {
 					return new AdvancedReportOutput(null, $outputFile);
 				} else {

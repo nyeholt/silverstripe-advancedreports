@@ -15,8 +15,8 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 			$form->Actions()->merge(array(
 				FormAction::create('preview', '')
 					->setTitle(_t('AdvancedReport.PREVIEW', 'Preview'))
-					->setAttribute('target', '_blank')
-					->setAttribute('data-icon', 'preview'),
+					->setAttribute('data-icon', 'preview')
+					->setAttribute('type', 'button'),
 				FormAction::create('generate', '')
 					->setTitle(_t('AdvancedReport.GENERATE', 'Generate'))
 			));
