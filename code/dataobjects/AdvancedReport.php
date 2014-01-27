@@ -685,6 +685,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				// stick it in a temp file?
 				// $outputFile = tempnam(TEMP_FOLDER, $format);
 				$outputFile = uniqid('Report',true) . '.' . $format;
+				// Debug::show($output);
 				
 				if (file_put_contents($outputFile, $output)) {
 					return new AdvancedReportOutput(null, $outputFile);

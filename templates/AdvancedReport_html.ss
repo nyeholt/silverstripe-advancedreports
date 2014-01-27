@@ -60,6 +60,7 @@ table.reporttable thead th {
 
 
 table.reporttable tbody td {
+	text-align:center;
 	border: 0 none;
 	margin: 0;
 	padding: 4pt;
