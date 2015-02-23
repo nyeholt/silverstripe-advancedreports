@@ -406,7 +406,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$fieldName .= '_' . $selected[$field];
 			}
 			
-			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : $reportFields[$field];
+			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : (isset($reportFields[$field]) ? $reportFields[$field] : $field);
 			
 			if (!isset($selected[$field])) {
 				$selected[$field] = 1;

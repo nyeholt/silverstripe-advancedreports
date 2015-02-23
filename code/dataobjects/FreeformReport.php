@@ -300,4 +300,132 @@ class FreeformReport extends AdvancedReport {
 			}
 		}
 	}
+	
+	public function getDataObjects() {
+		$rows = array();
+		$tables = $this->getQueryTables();
+		
+		$allFields = $this->getReportableFields();
+		
+		$selectedFields = $this->ReportFields->getValues(); 
+		
+		$fields = array();
+		
+		if ($selectedFields) {
+			foreach ($selectedFields as $field) {
+				if (!isset($allFields[$field])) {
+					continue;
+				}
+
+				$as = str_replace('.', '_', $allFields[$field]);
+				$fields[$as] = $field;
+			}
+		}
+
+		$multiValue = array();
+
+		foreach ($fields as $alias => $name) {
+			list($class, $field) = explode('.', $name);
+			
+			// if the name is prefixed, we need to figure out what the actual $class is
+			if (strpos($name, 'tbl_') === 0) {
+				$class = $this->fieldAliasToDataType($class);
+			}
+
+			$field  = preg_replace('/Value$/', '', $field);
+			$db = Config::inst()->get($class, 'db');
+
+			if (isset($db[$field]) && $db[$field] == 'MultiValueField') {
+				$multiValue[] = $alias;
+			}
+		}
+
+		$query = new SQLQuery($fields);
+		$num = 0;
+		$rootType = null;
+
+		foreach ($tables as $typeName => $alias) {
+			if (!$num++) {
+				$query->addFrom($alias);
+			} else {
+				// need to inner join now instead so figure out the mechanism for joining
+				$componentType = isset($this->componentTypeMap[$typeName]) ? $this->componentTypeMap[$typeName] : null;
+				if (!$componentType) {
+					continue;
+				}
+				
+				list($rootType, $componentName) = explode('.', $typeName);
+				list($table, $tblAlias) = explode(' ', $alias);
+
+				switch ($componentType) {
+					case 'has_one': {
+						$query->addInnerJoin($table, "\"$tblAlias\".\"ID\" = \"$rootType\".\"{$componentName}ID\"", $tblAlias);
+						break;
+					}
+					case 'has_many': {
+						$remoteName = singleton($rootType)->getRemoteJoinField($componentName, 'has_many');
+						$query->addInnerJoin($table, "\"$rootType\".\"ID\" = \"$tblAlias\".\"{$remoteName}\"", $tblAlias);
+						break;
+					}
+					case 'many_many': {
+						// figure out the joining table
+						$joinTable = $rootType . '_' . $componentName;
+						
+						$query->addInnerJoin($joinTable, sprintf('"%s"."ID" = "%s"."%sID"', $rootType, $joinTable, $rootType));
+						
+						$query->addInnerJoin($table, sprintf('"%s"."%sID" = "%s"."ID"', $joinTable, $table, $tblAlias), $tblAlias);
+						
+						break;
+					}
+				}
+			}
+		}
+
+		
+		$sort = $this->getSort();
+		
+		$query->addOrderBy($sort);
+		
+		$where = $this->getConditions();
+		
+		$query->addWhere($where);
+		
+		$out = $query->execute();
+
+		$rows = array();
+		$headers = $this->Headers->getValues();
+		
+		if ($headers && count($headers)) {
+			unset($headers[count($headers)]);
+		}
+
+		if (count($headers) && strlen($headers[0]) > 0) {
+			$rows[] = $headers;
+		} else {
+			$rows[] = $fields;
+		}
+
+		foreach ($out as $row) {
+			foreach ($multiValue as $field) {
+				$row[$field] = implode("\n", (array) unserialize($row[$field]));
+			}
+
+			$rows[] = $row;
+		}
+		
+		return ArrayList::create($rows);
+	}
+	
+	protected function fieldAliasToDataType($alias) {
+		$tables = $this->getQueryTables();
+		
+		foreach ($tables as $table => $aliasing) {
+			$bits = explode(' ', $aliasing);
+			if (count($bits) == 2) {
+				if ($bits[1] == $alias) {
+					return $bits[0];
+				}
+			}
+		}
+	}
 }
