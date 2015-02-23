@@ -8,7 +8,7 @@ Marcus Nyeholt
 
 ## Requirements
 
-* SilverStripe 2.4.x
+* SilverStripe 3.1.x
 * QueuedJobs module for scheduled report generation
   https://github.com/nyeholt/silverstripe-queuedjobs
 * PDFRendition module for PDF generation of reports

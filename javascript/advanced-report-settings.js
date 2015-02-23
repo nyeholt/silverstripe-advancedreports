@@ -1,4 +1,4 @@
-jQuery(function($) {
+;(function($) {
 	$(document).on("multiValueFieldAdded", ".advanced-report-fields", function(e) {
 		var self = $(this);
 		var field = $(e.target);
@@ -14,4 +14,16 @@ jQuery(function($) {
 			});
 		}
 	})
-});
+	
+	$(document).on('click', '#action_preview', function (e) {
+		e.preventDefault();
+		var form = $(this).parents('form');
+		var url = form.attr('action');
+		var base = $('base').attr('href');
+
+
+		url = base + url + '?action_preview=1&' + form.serialize();
+		window.open(url);
+		return false;
+	})
+})(jQuery);

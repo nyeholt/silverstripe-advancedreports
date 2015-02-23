@@ -163,14 +163,19 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		));
 
 		if($this->isInDB() && $this->canGenerate()) {
+			$options = array(
+				'html' => 'HTML', 'csv' => 'CSV', 'pdf' => 'PDF'
+			);
+			if (!class_exists('PDFRenditionService')) {
+				unset($options['pdf']);
+			}
+			
 			$fields->addFieldsToTab(
 				'Root.Main',
 				array(
 					DropdownField::create('PreviewFormat')
 						->setTitle(_t('AdvancedReport.PREVIEW_FORMAT', 'Preview format'))
-						->setSource(array(
-							'html' => 'HTML', 'csv' => 'CSV', 'pdf' => 'PDF'
-						)),
+						->setSource($options),
 					TextField::create('GeneratedReportTitle')
 						->setTitle(_t('AdvancedReport.GENERATED_TITLE', 'Generated report title'))
 						->setValue($this->Title)
@@ -194,9 +199,6 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @return FieldList
 	 */
 	public function getSettingsFields() {
-		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
-		Requirements::javascript('advancedreports/javascript/advanced-report-settings.js');
-
 		$reportable = $this->getReportableFields();
 		$converted = array();
 
