@@ -405,10 +405,10 @@ class FreeformReport extends AdvancedReport {
 		}
 		
 		$sort = $this->getSort();
-		$query->addOrderBy($sort);
+		$query->setOrderBy($sort);
 		
 		$where = $this->getConditions();
-		$query->addWhere($where);
+		$query->setWhere($where);
 		
 		$sql = $query->sql();
 		
