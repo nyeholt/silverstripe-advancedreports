@@ -12,8 +12,7 @@ class FreeformReport extends AdvancedReport {
 		'DataTypes'			=> 'MultiValueField',
 	);
 	
-	private static $allowed_types = array('Page' => 'Page');
-	
+	private static $allowed_types = array('Page' => 'Page', 'Member' => 'Member');
 	
 	/**
 	 * Which types have been currently selected?
@@ -47,7 +46,7 @@ class FreeformReport extends AdvancedReport {
 			$reportFieldsSelect = new MultiValueDropdownField('ReportFields', _t('AdvancedReport.REPORT_FIELDS', 'Report Fields'), $reportable)
 		);
 		
-		$fieldsGroup->push(new MultiValueTextField('Headers', _t('AdvancedReport.HEADERS', 'Header labels')));
+		$fieldsGroup->push(new MultiValueTextField('ReportHeaders', _t('AdvancedReport.HEADERS', 'Header labels')));
 
 		$fieldsGroup->addExtraClass('reportMultiField');
 		$reportFieldsSelect->addExtraClass('reportFieldsSelection');
@@ -208,6 +207,14 @@ class FreeformReport extends AdvancedReport {
 							$this->componentTypeMap["$selected.$name"] = 'many_many';
 						}
 					}
+					
+					$many_many = Config::inst()->get($selected, 'belongs_many_many'); 
+					if ($many_many && count($many_many)) {
+						foreach ($many_many as $name => $type) {
+							$types["$selected.$name"] = "$selected.$name";
+							$this->componentTypeMap["$selected.$name"] = 'belongs_many_many';
+						}
+					}
 				}
 			}
 		} 
@@ -243,6 +250,10 @@ class FreeformReport extends AdvancedReport {
 				$type = $this->getTypeRelationshipClass($type, $rel);
 				$fieldPrefix = $rel . '.';
 			}
+			
+			$fields["{$alias}.ID"] = $fieldPrefix . 'ID';
+			$fields["{$alias}.Created"] = $fieldPrefix . 'Created';
+			$fields["{$alias}.LastEdited"] = $fieldPrefix . 'LastEdited';
 
 			foreach (Config::inst()->get($type, 'db') as $field => $type) {
 				if($type == 'MultiValueField') {
@@ -293,7 +304,7 @@ class FreeformReport extends AdvancedReport {
 	 * @param string $relName 
 	 */
 	protected function getTypeRelationshipClass($type, $relName) {
-		foreach (array('has_one', 'has_many', 'many_many') as $rel) {
+		foreach (array('has_one', 'has_many', 'many_many', 'belongs_many_many') as $rel) {
 			$options = Config::inst()->get($type, $rel);
 			if ($options && isset($options[$relName])) {
 				return $options[$relName];
@@ -316,20 +327,32 @@ class FreeformReport extends AdvancedReport {
 				if (!isset($allFields[$field])) {
 					continue;
 				}
-
-				$as = str_replace('.', '_', $allFields[$field]);
+				$as = $this->dottedFieldToUnique($allFields[$field]);
 				$fields[$as] = $field;
 			}
 		}
 
 		$multiValue = array();
 
+		// go through and capture all the multivalue fields
+		// at the same time, remap Type.Field structures to 
+		// TableName.Field
+		$remappedFields = array();
+		$simpleFields = array();
 		foreach ($fields as $alias => $name) {
 			list($class, $field) = explode('.', $name);
 			
-			// if the name is prefixed, we need to figure out what the actual $class is
+			// if the name is prefixed, we need to figure out what the actual $class is from the
+			// remote join
 			if (strpos($name, 'tbl_') === 0) {
-				$class = $this->fieldAliasToDataType($class);
+				
+//				$class = $this->fieldAliasToDataType($class);
+				$remappedFields[] = '"' . Convert::raw2sql($class) . '"."' . Convert::raw2sql($field) . '"';
+			} else {
+				// figure out if we're the correct table, if not change the
+				// $name
+				$simpleFields[] = $field;
+				$name = $this->tableSpacedField($class, $field);
 			}
 
 			$field  = preg_replace('/Value$/', '', $field);
@@ -339,61 +362,97 @@ class FreeformReport extends AdvancedReport {
 				$multiValue[] = $alias;
 			}
 		}
-
-		$query = new SQLQuery($fields);
-		$num = 0;
-		$rootType = null;
-
+		
+		$baseTable = null;
+		$relatedTables = array();
+		
 		foreach ($tables as $typeName => $alias) {
-			if (!$num++) {
-				$query->addFrom($alias);
+			if (strpos($typeName, '.')) {
+				$relatedTables[$typeName] = $alias;
 			} else {
-				// need to inner join now instead so figure out the mechanism for joining
-				$componentType = isset($this->componentTypeMap[$typeName]) ? $this->componentTypeMap[$typeName] : null;
-				if (!$componentType) {
-					continue;
-				}
-				
-				list($rootType, $componentName) = explode('.', $typeName);
-				list($table, $tblAlias) = explode(' ', $alias);
-
-				switch ($componentType) {
-					case 'has_one': {
-						$query->addInnerJoin($table, "\"$tblAlias\".\"ID\" = \"$rootType\".\"{$componentName}ID\"", $tblAlias);
-						break;
-					}
-					case 'has_many': {
-						$remoteName = singleton($rootType)->getRemoteJoinField($componentName, 'has_many');
-						$query->addInnerJoin($table, "\"$rootType\".\"ID\" = \"$tblAlias\".\"{$remoteName}\"", $tblAlias);
-						break;
-					}
-					case 'many_many': {
-						// figure out the joining table
-						$joinTable = $rootType . '_' . $componentName;
-						
-						$query->addInnerJoin($joinTable, sprintf('"%s"."ID" = "%s"."%sID"', $rootType, $joinTable, $rootType));
-						
-						$query->addInnerJoin($table, sprintf('"%s"."%sID" = "%s"."ID"', $joinTable, $table, $tblAlias), $tblAlias);
-						
-						break;
-					}
-				}
+				$baseTable = $typeName;
 			}
 		}
+		
+		if (!$baseTable) {
+			throw new Exception("All freeform reports must have a base data type selected");
+		}
+		
+		$dataQuery = new DataQuery($baseTable);
+		
+//		$dataQuery->selectFromTable($table, $simpleFields);
+		$dataQuery->setQueriedColumns($simpleFields);
+		
+		$query = $dataQuery->getFinalisedQuery();
+		
+		foreach ($remappedFields as $alias => $name) {
+			$query->selectField($name);	
+		}
+		
+		
+		foreach (array_keys($relatedTables) as $relation) {
+			$this->applyRelation($baseTable, $query, $relation);
+		}
+		
+//		
+//		$query = new SQLQuery($remappedFields);
+//		$num = 0;
+//		$rootType = null;
+
+//		foreach ($relatedTables as $typeName => $alias) {
+//			// need to inner join now instead so figure out the mechanism for joining
+//			$componentType = isset($this->componentTypeMap[$typeName]) ? $this->componentTypeMap[$typeName] : null;
+//			if (!$componentType) {
+//				continue;
+//			}
+//
+//			list($rootType, $componentName) = explode('.', $typeName);
+//
+//			list($table, $tblAlias) = explode(' ', $alias);
+//
+//			switch ($componentType) {
+//				case 'has_one': {
+//					$remoteName = singleton($rootType)->getRemoteJoinField($componentName, 'has_one');
+//					$query->addInnerJoin($table, "\"$tblAlias\".\"ID\" = \"$rootType\".\"$remoteName\"", $tblAlias);
+//					break;
+//				}
+//				case 'has_many': {
+//					$remoteName = singleton($rootType)->getRemoteJoinField($componentName, 'has_many');
+//					$query->addInnerJoin($table, "\"$rootType\".\"ID\" = \"$tblAlias\".\"{$remoteName}\"", $tblAlias);
+//					break;
+//				}
+//				case 'belongs_many_many':
+//				case 'many_many': {
+//					// figure out the joining table
+//					$joinTable = $rootType . '_' . $componentName;
+//
+//					$manyJoinInfo = singleton($rootType)->many_many($componentName);
+//					// array($class, $candidate, $parentField, $childField, "{$class}_$component");
+//					if (count($manyJoinInfo) == 5) {
+//						$joinTable = $manyJoinInfo[4];
+//						$query->addInnerJoin($joinTable, sprintf('"%s"."ID" = "%s"."%s"', $manyJoinInfo[0], $joinTable, $manyJoinInfo[2]));
+//						$query->addInnerJoin($manyJoinInfo[1], sprintf('"%s"."%s" = "%s"."ID"', $joinTable, $manyJoinInfo[3], $tblAlias ), $tblAlias);
+//					}
+//
+//
+//					break;
+//				}
+//			}
+//		}
 
 		
 		$sort = $this->getSort();
-		
 		$query->addOrderBy($sort);
 		
 		$where = $this->getConditions();
-		
 		$query->addWhere($where);
+		
+		$sql = $query->sql();
 		
 		$out = $query->execute();
 
 		$rows = array();
-		$headers = $this->Headers->getValues();
+		$headers = $this->obj('ReportHeaders')->getValues();
 		
 		if ($headers && count($headers)) {
 			unset($headers[count($headers)]);
@@ -414,6 +473,103 @@ class FreeformReport extends AdvancedReport {
 		}
 		
 		return ArrayList::create($rows);
+	}
+	
+	protected function tableSpacedField($type, $field) {
+		$types = ClassInfo::ancestry($type, true);
+		foreach (array_reverse($types) as $class) {
+			// check its DB and whether it defines the field
+			$db = Config::inst()->get($class, 'db', Config::UNINHERITED);
+			if (isset($db[$field])) {
+				return '"' . Convert::raw2sql($class). '"."' . Convert::raw2sql($field) . '"';
+			}
+		}
+	}
+	
+	/**
+	 * Traverse the relationship fields, and add the table
+	 * mappings to the query object state. This has to be called
+	 * in any overloaded {@link SearchFilter->apply()} methods manually.
+	 * 
+	 * @param String|array $relation The array/dot-syntax relation to follow
+	 * @return The model class of the related item
+	 */
+	protected function applyRelation($modelClass, SQLQuery $query, $relation) {
+		// NO-OP
+		if(!$relation) return;
+		
+		$alias = 'tbl_' . $this->dottedFieldToUnique($relation);
+		
+		if(is_string($relation)) {
+			$relation = explode(".", $relation);
+		}
+		
+		foreach($relation as $rel) {
+			$model = singleton($modelClass);
+			if ($component = $model->has_one($rel)) {
+				if(!$query->isJoinedTo($alias)) {
+					$has_one = array_flip($model->has_one());
+					$foreignKey = $has_one[$component];
+					$realModelClass = ClassInfo::table_for_object_field($modelClass, "{$foreignKey}ID");
+					$query->addLeftJoin($component,
+						"\"$alias\".\"ID\" = \"{$realModelClass}\".\"{$foreignKey}ID\"", $alias);
+				
+					/**
+					 * add join clause to the component's ancestry classes so that the search filter could search on
+					 * its ancestor fields.
+					 */
+					$ancestry = ClassInfo::ancestry($component, true);
+					if(!empty($ancestry)){
+						$ancestry = array_reverse($ancestry);
+						foreach($ancestry as $ancestor){
+							if($ancestor != $component){
+								$query->addInnerJoin($ancestor, "\"$alias\".\"ID\" = \"$ancestor\".\"ID\"");
+							}
+						}
+					}
+				}
+				$modelClass = $component;
+
+			} elseif ($component = $model->has_many($rel)) {
+				if(!$query->isJoinedTo($alias)) {
+					$ancestry = $model->getClassAncestry();
+					$foreignKey = $model->getRemoteJoinField($rel);
+					$query->addLeftJoin($component,
+						"\"$alias\".\"{$foreignKey}\" = \"{$ancestry[0]}\".\"ID\"");
+					/**
+					 * add join clause to the component's ancestry classes so that the search filter could search on
+					 * its ancestor fields.
+					 */
+					$ancestry = ClassInfo::ancestry($component, true);
+					if(!empty($ancestry)){
+						$ancestry = array_reverse($ancestry);
+						foreach($ancestry as $ancestor){
+							if($ancestor != $component){
+								$query->addInnerJoin($ancestor, "\"$alias\".\"ID\" = \"$ancestor\".\"ID\"");
+							}
+						}
+					}
+				}
+				$modelClass = $component;
+
+			} elseif ($component = $model->many_many($rel)) {
+				list($parentClass, $componentClass, $parentField, $componentField, $relationTable) = $component;
+				$parentBaseClass = ClassInfo::baseDataClass($parentClass);
+				$componentBaseClass = ClassInfo::baseDataClass($componentClass);
+				$query->addInnerJoin($relationTable,
+					"\"$relationTable\".\"$parentField\" = \"$parentBaseClass\".\"ID\"");
+				$query->addLeftJoin($componentBaseClass,
+					"\"$relationTable\".\"$componentField\" = \"$alias\".\"ID\"", $alias);
+				if(ClassInfo::hasTable($componentClass)) {
+					$query->addLeftJoin($componentClass,
+						"\"$relationTable\".\"$componentField\" = \"$componentClass\".\"ID\"");
+				}
+				$modelClass = $componentClass;
+
+			}
+		}
+		
+		return $modelClass;
 	}
 	
 	protected function fieldAliasToDataType($alias) {
