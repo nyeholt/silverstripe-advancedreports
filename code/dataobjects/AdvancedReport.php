@@ -43,15 +43,15 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @config
 	 */
 	private static $allowed_conditions = array(
-		'=' => '=',
-		'<>' => '!=',
-		'>=' => '>=',
-		'>' => '>',
-		'<' => '<',
-		'<=' => '<=',
-		'IN' => 'In List',
-		'IS' => 'IS',
-		'IS NOT' => 'IS NOT'
+		'ExactMatch' => '=',
+		'ExactMatch:not' => '!=',
+		'GreaterThanOrEqual' => '>=',
+		'GreaterThan' => '>',
+		'LessThan' => '<',
+		'LessThanOrEqual' => '<=',
+		'ExactMatch' => 'In List',
+		'IsNull' => 'IS NULL',
+		'IsNull:not' => 'IS NOT NULL'
 	);
 
 	private static $db = array(
@@ -384,6 +384,36 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	public function dottedFieldToUnique($field) {
 		return str_replace('.', '_', $field);
 	}
+	
+	/**
+	 * Determine the class that defines the given field. 
+	 * 
+	 * This will look through all parent classes and return the class that has a dbtable that defines the
+	 * field. 
+	 * 
+	 * @param string $type
+	 *				The base data object type the field is being referenced in
+	 * @param string $field
+	 *				The field being referenced
+	 * @return string
+	 */
+	protected function tableSpacedField($type, $field) {
+		$types = ClassInfo::ancestry($type, true);
+		$class = '';
+		foreach (array_reverse($types) as $class) {
+			// check its DB and whether it defines the field
+			$db = Config::inst()->get($class, 'db', Config::UNINHERITED);
+			if (isset($db[$field])) {
+				break;
+			}
+		}
+		
+		if (!$class) {
+			$class = $type;
+		}
+		// if we fall through to here, we assume that we're just going to use the base data table 
+		return '"' . Convert::raw2sql($class). '"."' . Convert::raw2sql($field) . '"';
+	}
 
 	/**
 	 * Return the 'included fields' list. 
@@ -472,12 +502,12 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		for ($i = 0, $c = count($fields); $i < $c; $i++) {
 			$field = $fields[$i];
 			if (!isset($ops[$i]) || !isset($vals[$i])) {
-				break;
+				continue;
 			}
 
 			$op = $ops[$i];
 			if (!isset($conditions[$op])) {
-				break;
+				continue;
 			}
 
 			$originalVal = $val = $vals[$i];
@@ -498,11 +528,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			
 			$val = $this->applyFiltersToValue($originalVal);
 			
-			$filter[$field . ' ' . $op] = $val;
+			$filter[$field . ':' . $op] = $val;
 		}
-		
 
-		return singleton('FRUtils')->dbQuote($filter);
+		return $filter; // $this->dbQuote($filter);
 	}
 	
 	/**
@@ -523,8 +552,50 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		return $originalVal;
 	}
-
-
+	
+	
+	/**
+	 * Helper method that applies the given filters to a specific DataQuery object
+	 * 
+	 * Replicates similar functionality in DataList
+	 * 
+	 * @param DataQuery $dataQuery
+	 * @param array $filterArray
+	 */
+	protected function getWhereClause($filterArray, $baseType) {
+		$parts = array();
+		$allowed = self::config()->allowed_conditions;
+		
+		foreach($filterArray as $field => $value) {
+			$fieldArgs = explode(':', $field);
+			$field = array_shift($fieldArgs);
+			$filterType = array_shift($fieldArgs);
+			$modifiers = $fieldArgs;
+			$originalFilter = $filterType;
+			if (count($modifiers)) {
+				$originalFilter = $originalFilter . ':' . implode(':', $modifiers);
+			}
+			
+			if (!isset($allowed[$originalFilter])) {
+				continue;
+			}
+			
+			// actually escape the field
+			if (!strpos($field, '.')) {
+				$field = $this->tableSpacedField($baseType, $field);
+			}
+			
+			$parts[$field . ' ' . $allowed[$originalFilter]] = $value;
+		}
+		
+		$where = '';
+		
+		if (count($parts)) {
+			$where = $this->dbQuote($parts);
+		}
+		return $where;
+	}
+	
 	/**
 	 * Gets a string that represents the possible 'sort' options. 
 	 *
@@ -822,6 +893,68 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				'sort' => 400
 			),
 		);
+	}
+	
+	function dbQuote($filter = array(), $join = " AND ") {
+		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
+
+		$string = '';
+		$sep = '';
+
+		foreach ($filter as $field => $value) {
+			// first break the field up into its two components
+			$operator = '';
+			if (is_string($field)) {
+				list($field, $operator) = explode(' ', trim($field));
+			}
+
+			$value = $this->recursiveQuote($value);
+			
+			// not using quote char if it's already escaped
+			if ($field{0} == '"') {
+				$QUOTE_CHAR = '';
+			} else {
+				$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
+			}
+
+			if (strpos($field, '.')) {
+				list($tb, $fl) = explode('.', $field);
+				$string .= $sep . $QUOTE_CHAR . $tb . $QUOTE_CHAR . '.' . $QUOTE_CHAR . $fl . $QUOTE_CHAR . " $operator " . $value;
+			} else {
+				if (is_numeric($field)) {
+					$string .= $sep . $value;
+				} else {
+					$string .= $sep . $QUOTE_CHAR . $field . $QUOTE_CHAR . " $operator " . $value;
+				}
+			}
+
+			$sep = $join;
+		}
+
+		return $string;
+	}
+
+	protected function recursiveQuote($val) {
+		if (is_array($val)) {
+			$return = array();
+			foreach ($val as $v) {
+				$return[] = $this->recursiveQuote($v);
+			}
+			
+			return '('.implode(',', $return).')';
+		} else if (is_null($val)) {
+			$val = 'NULL';
+		} else if (is_int($val)) {
+			$val = (int) $val;
+		} else if (is_double($val)) {
+			$val = (double) $val;
+		} else if (is_float($val)) {
+			$val = (float) $val;
+		} else {
+			$val = "'" . Convert::raw2sql($val) . "'";
+		}
+
+		return $val;
 	}
 }
 

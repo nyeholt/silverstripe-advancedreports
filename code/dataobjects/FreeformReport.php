@@ -391,15 +391,23 @@ class FreeformReport extends AdvancedReport {
 		// converts all the fields being queried into the appropriate 
 		// tables for querying. 
 		
+
+		
 		$query = $dataQuery->getFinalisedQuery();
-//		$query->setSelect(array());
 		
 		// explicit fields that we want to query against, that come from joins. 
+		// we need to do it this way to ensure that a) the field names in the results match up to 
+		// the header labels specified and b) because dataQuery by default doesn't return fields from
+		// joined tables, it merely allows for fields from the base dataClass
 		foreach ($remappedFields as $alias => $name) {
 			$query->selectField($name, $alias);	
 		}
 		
-		// and here's where those joins are added
+		// and here's where those joins are added. This is somewhat copied from dataQuery,
+		// but modified so that our table aliases are used properly to avoid the bug described at
+		// https://github.com/silverstripe/silverstripe-framework/issues/3518
+		// it also ensures the alias names are in a format that our header assignment and field retrieval works as
+		// expected
 		foreach (array_keys($relatedTables) as $relation) {
 			$this->applyRelation($baseTable, $query, $relation);
 		}
@@ -407,7 +415,8 @@ class FreeformReport extends AdvancedReport {
 		$sort = $this->getSort();
 		$query->setOrderBy($sort);
 		
-		$where = $this->getConditions();
+		$filter = $this->getConditions();
+		$where = $this->getWhereClause($filter, $baseTable);
 		$query->setWhere($where);
 		
 		$sql = $query->sql();
@@ -426,17 +435,6 @@ class FreeformReport extends AdvancedReport {
 		}
 		
 		return ArrayList::create($rows);
-	}
-	
-	protected function tableSpacedField($type, $field) {
-		$types = ClassInfo::ancestry($type, true);
-		foreach (array_reverse($types) as $class) {
-			// check its DB and whether it defines the field
-			$db = Config::inst()->get($class, 'db', Config::UNINHERITED);
-			if (isset($db[$field])) {
-				return '"' . Convert::raw2sql($class). '"."' . Convert::raw2sql($field) . '"';
-			}
-		}
 	}
 	
 	/**

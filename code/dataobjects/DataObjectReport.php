@@ -63,7 +63,7 @@ class DataObjectReport extends AdvancedReport {
 
 	public function getDataObjects() {
 		return DataList::create($this->ReportOn)
-			->where($this->getFilter())
+			->filter($this->getFilter())
 			->sort($this->getSort());
 	}
 
@@ -75,13 +75,6 @@ class DataObjectReport extends AdvancedReport {
 	 */
 	protected function getFilter() {
 		$conditions = $this->getConditions();
-		$where = '';
-		$sep = '';
-		if ($conditions) {
-			$where .= $conditions;
-			$sep = ' AND ';
-		}
-
-		return $where;
+		return $conditions;
 	}
 }
