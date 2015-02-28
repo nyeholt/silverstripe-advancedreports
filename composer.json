@@ -1,5 +1,5 @@
 {
-	"name": "nyeholt/advancedreports",
+	"name": "silverstripe-australia/advancedreports",
 	"description": "A reporting module that provides an extra level of configuration and functionality over the base SilverStripe structures. Generates static output content in HTML, CSV and PDF formats.",
 	"type": "silverstripe-module",
 	"keywords": ["silverstripe", "reports"],
