@@ -156,7 +156,7 @@ abstract class ReportFormatter {
 					}
 				}
 
-				$value = is_object($item) ? $item->$field : $item[$field];
+				$value = is_object($item) ? (method_exists($item, $field) ? $item->$field() : $item->$field) : $item[$field];
 
 				if(isset($formatters[$field])) {
 					$formatter = $formatters[$field];
