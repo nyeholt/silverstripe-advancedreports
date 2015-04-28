@@ -486,7 +486,7 @@ class FreeformReport extends AdvancedReport {
 					$ancestry = $model->getClassAncestry();
 					$foreignKey = $model->getRemoteJoinField($rel);
 					$query->addLeftJoin($component,
-						"\"$alias\".\"{$foreignKey}\" = \"{$ancestry[0]}\".\"ID\"");
+						"\"$alias\".\"{$foreignKey}\" = \"{$ancestry[0]}\".\"ID\"", $alias);
 					/**
 					 * add join clause to the component's ancestry classes so that the search filter could search on
 					 * its ancestor fields.
