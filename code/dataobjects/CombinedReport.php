@@ -92,9 +92,9 @@ class CombinedReport extends AdvancedReport {
 		Requirements::clear();
 		$convertTo = null;
 		$renderFormat = $format;
-		if (isset(AdvancedReport::$conversion_formats[$format])) {
+		if (isset(AdvancedReport::config()->conversion_formats[$format])) {
 			$convertTo = 'pdf';
-			$renderFormat = AdvancedReport::$conversion_formats[$format];
+			$renderFormat = AdvancedReport::config()->conversion_formats[$format];
 		}
 		
 		$reports = $this->ChildReports();
