@@ -61,6 +61,9 @@ class DataObjectReport extends AdvancedReport {
 		return $fields;
 	}
 
+	/**
+	 * @return DataList
+	 */
 	public function getDataObjects() {
 		return DataList::create($this->ReportOn)
 			->filter($this->getFilter())
