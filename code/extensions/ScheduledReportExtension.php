@@ -7,7 +7,7 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledReportExtension extends DataExtension {
-	
+
 	private static $db = array(
 		'ScheduledTitle'		=> 'Varchar(255)',
 		'FirstGeneration'		=> 'SS_Datetime',
@@ -15,14 +15,14 @@ class ScheduledReportExtension extends DataExtension {
 		'RegenerateFree'		=> 'Varchar',
 		'SendReportTo'			=> 'Varchar(255)',
 	);
-	
+
 	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
 
 	/**
 	 *
-	 * @param FieldSet $fields 
+	 * @param FieldSet $fields
 	 */
 	public function updateCMSFields($fields) {
 		if (class_exists('AbstractQueuedJob')) {
@@ -40,21 +40,21 @@ class ScheduledReportExtension extends DataExtension {
 					new ReadonlyField('NextRunDate', _t('AdvancedReports.NEXT_RUN_DATE', 'Next run date'), $jobTime)
 				));
 			}
-			
+
 			$dt->getDateField()->setConfig('showcalendar', true);
 			$dt->getTimeField()->setConfig('showdropdown', true);
-			
+
 		} else {
 			$fields->addFieldToTab('Root.Schedule', new LiteralField('WARNING', 'You must install the Queued Jobs module to schedule reports'));
 		}
 	}
-	
+
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
 		if (!$this->owner->ScheduledTitle) {
 			$this->owner->ScheduledTitle = $this->owner->Title;
 		}
-		
+
 		if ($this->owner->FirstGeneration) {
 			$changed = $this->owner->getChangedFields();
 			$changed = isset($changed['FirstGeneration']) || isset($changed['RegenerateEvery']) || isset($changed['RegenerateFree']);
@@ -63,7 +63,7 @@ class ScheduledReportExtension extends DataExtension {
 				if ($this->owner->ScheduledJob()->ID) {
 					$this->owner->ScheduledJob()->delete();
 				}
-				
+
 				$this->owner->ScheduledJobID = 0;
 			}
 

@@ -6,11 +6,11 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class CsvReportFormatter extends ReportFormatter {
-	
+
 	protected function getOutputFormat() {
 		return 'csv';
 	}
-	
+
 	/**
 	 * Create a header for the report
 	 */
@@ -21,7 +21,7 @@ class CsvReportFormatter extends ReportFormatter {
 			$header[] = $display;
 		}
 
-		return '"'.implode('","', $header).'"';
+		return '"'.implode('", "', $header).'"';
 	}
 
 	/**
@@ -29,7 +29,7 @@ class CsvReportFormatter extends ReportFormatter {
 	 */
 	protected function createBody($tableName, $tableData) {
 		$body = array();
-		
+
 		$formatters = $this->report->FieldFormatting;
 		$formatting = array();
 		if ($formatters && count($formatters->getValues())) {
@@ -46,7 +46,7 @@ class CsvReportFormatter extends ReportFormatter {
 				}
 				$csvRow[] = $value;
 			}
-			$body[] = '"'.implode('","', $csvRow).'"';
+			$body[] = '"'.implode('", "', $csvRow).'"';
 		}
 
 		return implode("\n", $body);

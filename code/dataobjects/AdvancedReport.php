@@ -10,7 +10,7 @@
  * A ReportPage makes use of a reportformatter to actually generate the
  * report that gets displayed to the user; this report formatter uses
  * one of these AdvancedReport objects to actually get all the relevant
- * information to be displayed. 
+ * information to be displayed.
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
@@ -79,15 +79,15 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'ReportFields' => 'Fields',
 		'ReportHeaders' => 'Field Headers',
 		'ConditionFields' => 'Conditions',
-		'PaginateBy' => 'Paginate By',						
+		'PaginateBy' => 'Paginate By',
 		'SortBy' => 'Sort Field',
 		'SortDir' => 'Sort Order',
-	);	
-	
+	);
+
 
 	private static $has_one = array(
 		'Report' => 'AdvancedReport',			// never set for the 'template' report for a page, but used to
-												// list all the generated reports. 
+												// list all the generated reports.
 		'HTMLFile' => 'File',
 		'CSVFile' => 'File',
 		'PDFFile' => 'File',
@@ -169,7 +169,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			if (!class_exists('PDFRenditionService')) {
 				unset($options['pdf']);
 			}
-			
+
 			$fields->addFieldsToTab(
 				'Root.Main',
 				array(
@@ -257,7 +257,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		);
 		$sortGroup->setName('SortGroup');
 		$sortGroup->addExtraClass('dropdown');
-		
+
 		$formatters = ClassInfo::implementorsOf('ReportFieldFormatter');
 		$fmtrs = array();
 		foreach ($formatters as $formatterClass) {
@@ -302,9 +302,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$converted
 			),
 			$kv = new KeyValueField(
-				'FieldFormatting', 
-				_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'), 
-				$converted, 
+				'FieldFormatting',
+				_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'),
+				$converted,
 				$fmtrs
 			),
 			new MultiValueDropdownField(
@@ -313,7 +313,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$converted
 			)
 		);
-		
+
 		if($this->hasMethod('updateReportFields')) {
 			Deprecation::notice(
 				'3.0',
@@ -347,16 +347,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Get a link to a specific instance of this report. 
-	 * 
-	 * @param String $type 
+	 * Get a link to a specific instance of this report.
+	 *
+	 * @param String $type
 	 */
 	public function getFileLink($type) {
 		return $this->{strtoupper($type) . 'File'}()->Link();
 	}
 
 	/**
-	 * Abstract method; actual reports should define this. 
+	 * Abstract method; actual reports should define this.
 	 */
 	public function getReportName() {
 		throw new Exception("Abstract method called; please implement getReportName()");
@@ -365,7 +365,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Gets an array of field names that can be used in this report
 	 *
-	 * Override to specify your own values. 
+	 * Override to specify your own values.
 	 */
 	protected function getReportableFields() {
 		return array('Title' => 'Title');
@@ -384,13 +384,13 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	public function dottedFieldToUnique($field) {
 		return str_replace('.', '_', $field);
 	}
-	
+
 	/**
-	 * Determine the class that defines the given field. 
-	 * 
+	 * Determine the class that defines the given field.
+	 *
 	 * This will look through all parent classes and return the class that has a dbtable that defines the
-	 * field. 
-	 * 
+	 * field.
+	 *
 	 * @param string $type
 	 *				The base data object type the field is being referenced in
 	 * @param string $field
@@ -407,16 +407,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				break;
 			}
 		}
-		
+
 		if (!$class) {
 			$class = $type;
 		}
-		// if we fall through to here, we assume that we're just going to use the base data table 
+		// if we fall through to here, we assume that we're just going to use the base data table
 		return '"' . Convert::raw2sql($class). '"."' . Convert::raw2sql($field) . '"';
 	}
 
 	/**
-	 * Return the 'included fields' list. 
+	 * Return the 'included fields' list.
 	 *
 	 * @return
 	 */
@@ -426,18 +426,18 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$sel = $this->ReportFields->getValues();
 		$headerTitles = $this->ReportHeaders->getValues();
 		$selected = array();
-		
+
 		for ($i = 0, $c = count($sel); $i < $c; $i++) {
 			$field = $sel[$i];
 			$fieldName = $this->dottedFieldToUnique($field);
-			
+
 			if (isset($selected[$field])) {
 				$selected[$field]++;
 				$fieldName .= '_' . $selected[$field];
 			}
-			
+
 			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : (isset($reportFields[$field]) ? $reportFields[$field] : $field);
-			
+
 			if (!isset($selected[$field])) {
 				$selected[$field] = 1;
 			}
@@ -450,23 +450,23 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * Note that the "DataObjects" don't necessarily need to implement DataObjectInterface;
 	 * we can return whatever objects (or array maps) that we like.
-	 * 
+	 *
 	 */
 	public function getDataObjects() {
 		throw new Exception("Abstract method called; please implement getDataObjects()");
 	}
-	
+
 	/**
-	 * Return an array of FieldValuePrefix => Callable 
+	 * Return an array of FieldValuePrefix => Callable
 	 * filters for changing the values of the condition value
-	 * 
-	 * This is so that you can do things like strtotime() in conditions for 
-	 * a date field, for example. 
-	 * 
+	 *
+	 * This is so that you can do things like strtotime() in conditions for
+	 * a date field, for example.
+	 *
 	 * Everything AFTER the prefix given here is passed through to the
 	 * callable, so you can handle the passing of parameters manually
 	 * if needed
-	 * 
+	 *
 	 * @return array
 	 */
 	protected function getConditionFilters() {
@@ -517,7 +517,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					$val = explode(',', $val);
 					break;
 				}
-				case 'IS': 
+				case 'IS':
 				case 'IS NOT': {
 					if (strtolower($val) == 'null') {
 						$val = null;
@@ -525,24 +525,24 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					break;
 				}
 			}
-			
+
 			$val = $this->applyFiltersToValue($originalVal);
-			
+
 			$filter[$field . ':' . $op] = $val;
 		}
 
 		return $filter; // $this->dbQuote($filter);
 	}
-	
+
 	/**
 	 * Apply some filters to a condition value for use in a query
-	 * 
+	 *
 	 * @param string $originalVal
 	 * @return string
 	 */
 	public function applyFiltersToValue($originalVal) {
 		$filters = $this->getConditionFilters();
-		
+
 		foreach ($filters as $prefix => $callable) {
 			if (strpos($originalVal, $prefix) === 0) {
 				$val = substr($originalVal, strlen($prefix));
@@ -552,59 +552,59 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		return $originalVal;
 	}
-	
-	
+
+
 	/**
 	 * Helper method that applies the given filters to a specific DataQuery object
-	 * 
+	 *
 	 * Replicates similar functionality in DataList
-	 * 
+	 *
 	 * @param DataQuery $dataQuery
 	 * @param array $filterArray
 	 */
 	protected function getWhereClause($filterArray, $baseType) {
 		$parts = array();
 		$allowed = self::config()->allowed_conditions;
-		
-        if (is_array($filterArray) && count($filterArray)) {
-            foreach($filterArray as $field => $value) {
-                $fieldArgs = explode(':', $field);
-                $field = array_shift($fieldArgs);
-                $filterType = array_shift($fieldArgs);
-                $modifiers = $fieldArgs;
-                $originalFilter = $filterType;
-                if (count($modifiers)) {
-                    $originalFilter = $originalFilter . ':' . implode(':', $modifiers);
-                }
 
-                if (!isset($allowed[$originalFilter])) {
-                    continue;
-                }
+		if (is_array($filterArray) && count($filterArray)) {
+			foreach($filterArray as $field => $value) {
+				$fieldArgs = explode(':', $field);
+				$field = array_shift($fieldArgs);
+				$filterType = array_shift($fieldArgs);
+				$modifiers = $fieldArgs;
+				$originalFilter = $filterType;
+				if (count($modifiers)) {
+					$originalFilter = $originalFilter . ':' . implode(':', $modifiers);
+				}
 
-                // actually escape the field
-                if (!strpos($field, '.')) {
-                    $field = $this->tableSpacedField($baseType, $field);
-                }
-                
-                $operator = $allowed[$originalFilter];
+				if (!isset($allowed[$originalFilter])) {
+					continue;
+				}
 
-                $parts[$field . ' ' . $operator] = $value;
-            }
-        }
-		
-		
+				// actually escape the field
+				if (!strpos($field, '.')) {
+					$field = $this->tableSpacedField($baseType, $field);
+				}
+
+				$operator = $allowed[$originalFilter];
+
+				$parts[$field . ' ' . $operator] = $value;
+			}
+		}
+
+
 		$where = '';
-		
+
 		if (count($parts)) {
 			$where = $this->dbQuote($parts);
 		}
 		return $where;
 	}
-	
+
 	/**
-	 * Gets a string that represents the possible 'sort' options. 
+	 * Gets a string that represents the possible 'sort' options.
 	 *
-	 * @return string 
+	 * @return string
 	 */
 	protected function getSort() {
 		$sortBy = '';
@@ -651,14 +651,14 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Return any fields that need special 'numeric' sorting. This allows sorting of numbers
 	 * in strings, so that
-	 * 
+	 *
 	 * 1-document.txt
 	 * 2-document.txt
-	 * 11-document.txt 
-	 * 
+	 * 11-document.txt
+	 *
 	 * are sorted in their correct order, and the '11' document doesn't come immediately
-	 * after the '1' document. 
-	 * 
+	 * after the '1' document.
+	 *
 	 */
 	protected function getNumericSortFields() {
 		if ($this->NumericSort) {
@@ -674,7 +674,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * This is used in cases where there is a table of data that might have 3 different values in
 	 * the left column, and for each of those 3 values, many entries in the right column. What will happen
 	 * (if the array here returns 'LeftColFieldName') is that any immediately following column that
-	 * has the same value as current is blanked out. 
+	 * has the same value as current is blanked out.
 	 */
 	public function getDuplicatedBlankingFields() {
 		if ($this->ClearColumns && $this->ClearColumns->getValues()) {
@@ -706,11 +706,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 	/**
 	 * Creates a report in a specified format, returning a string which contains either
-	 * the raw content of the report, or an object that encapsulates the report (eg a PDF). 
-	 * 
+	 * the raw content of the report, or an object that encapsulates the report (eg a PDF).
+	 *
 	 * @param String $format
 	 * @param boolean $store
-	 *				Whether to store the created report. 
+	 *				Whether to store the created report.
 	 * @param array $parameters
 	 *				An array of parameters that will be used as dynamic replacements
 	 */
@@ -746,7 +746,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$date = DBField::create_field('SS_Datetime', time());
 		$this->Text = nl2br($this->Text);
-		
+
 		$reportData = array('ReportContent' => $content, 'Format' => $format, 'Now' => $date);
 		$additionalData = $this->additionalReportData();
 		$reportData = array_merge($reportData, $additionalData);
@@ -754,7 +754,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$output = $this->customise($reportData)->renderWith($templates);
 
 		if (!$output) {
-			// put_contents fails if it's an empty string... 
+			// put_contents fails if it's an empty string...
 			$output = " ";
 		}
 
@@ -765,7 +765,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				if (file_put_contents($outputFile, $output)) {
 					return new AdvancedReportOutput(null, $outputFile);
 				} else {
-					throw new Exception("Failed creating report in $outputFile"); 
+					throw new Exception("Failed creating report in $outputFile");
 				}
 
 			} else {
@@ -790,10 +790,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			}
 		}
 	}
-	
+
 	/**
-	 * Get an array of additional data to add to a report. 
-	 * 
+	 * Get an array of additional data to add to a report.
+	 *
 	 * @return array
 	 */
 	protected function additionalReportData() {
@@ -813,10 +813,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$name = preg_replace('/ +/', '-', trim($this->Title));
 		$name = preg_replace('/[^A-Za-z0-9.+_-]/', '', $name);
 		$name = $name . '.' . $format;
-		
+
 		$childId = $storeIn->constructChild($name);
 		$file = DataObject::get_by_id('File', $childId);
-		
+
 		// it's a new file, so trigger the onAfterUpload method for extensions that expect it
 		if (method_exists($file, 'onAfterUpload')) {
 			$file->onAfterUpload();
@@ -828,7 +828,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		// create the raw report file
 		$output = $this->createReport($format, true);
-		
+
 		if (is_object($output)) {
 			if (file_exists($output->filename)) {
 				copy($output->filename, $file->getFullPath());
@@ -899,7 +899,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			),
 		);
 	}
-	
+
 	function dbQuote($filter = array(), $join = " AND ") {
 		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
 
@@ -914,7 +914,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			}
 
 			$value = $this->recursiveQuote($value);
-			
+
 			// not using quote char if it's already escaped
 			if ($field{0} == '"') {
 				$QUOTE_CHAR = '';
@@ -945,7 +945,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			foreach ($val as $v) {
 				$return[] = $this->recursiveQuote($v);
 			}
-			
+
 			return '('.implode(',', $return).')';
 		} else if (is_null($val)) {
 			$val = 'NULL';
@@ -964,24 +964,24 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 }
 
 class ConditionFilters {
-	
+
 	const ARGUMENT_SEPARATOR = '|';
-	
+
 	protected $possibleParamValues = array();
-	
+
 	public function __construct($possibleValues = array()) {
 		$this->possibleParamValues = $possibleValues;
 	}
-	
+
 	public function strtotimeDateValue($value) {
 		$args = $this->getArgs($value);
 		if (!isset($args[1])) {
 			$args[1] = 'Y-m-d H:i:s';
 		}
-		
+
 		return date($args[1], strtotime($args[0]));
 	}
-	
+
 	public function paramValue($value, $report) {
 		$args = $this->getArgs($value);
 		$params = $report->ReportParams;
@@ -996,8 +996,8 @@ class ConditionFilters {
 		if ($params && isset($args[0]) && isset($params[$args[0]])) {
 			return $report->applyFiltersToValue($params[$args[0]]);
 		}
-		
-		
+
+
 		return '';
 	}
 
