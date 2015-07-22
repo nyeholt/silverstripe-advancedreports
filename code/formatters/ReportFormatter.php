@@ -156,7 +156,18 @@ abstract class ReportFormatter {
 					}
 				}
 
-				$value = is_object($item) ? (method_exists($item, $field) ? $item->$field() : $item->$field) : $item[$field];
+				// check if the value is coming from an object or is an element of an array
+				$value = 0;
+				if (is_object($item)) {
+					// if this is an object we need to check if the field we are looking for is a method or a value
+					if (method_exists($item, $field)) {
+						$value = $item->$field();
+					} else {
+						$value = $item->$field;
+					}
+				} else {
+					$value = $item[$field];
+				}
 
 				if(isset($formatters[$field])) {
 					$formatter = $formatters[$field];
