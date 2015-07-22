@@ -213,12 +213,20 @@ abstract class ReportFormatter {
 								$titleColumn = $prevField;
 							}
 							$cur = isset($sums[$field]) ? $sums[$field] : 0;
+
+							// use a report custom method for adding up or count/sum it up
+							//  based on the best possible assumptions we can make
 							if (method_exists($this->report, 'columnAdder')) {
 								$sums[$field] = $this->report->columnAdder($field, $cur, $value);
 							} else {
-								$sums[$field] = $cur + $value;
+								// summing up totals makes only sense if it is a number
+								// otherwise we count the number of items
+								if (is_numeric($value)) {
+									$sums[$field] = $cur + $value;
+								} else {
+									$sums[$field] = $cur + 1;
+								}
 							}
-
 						} else {
 							$sums[$field] = '';
 						}
