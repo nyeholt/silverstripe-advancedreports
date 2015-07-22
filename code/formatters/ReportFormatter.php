@@ -103,6 +103,24 @@ abstract class ReportFormatter {
 	}
 
 	/**
+	 * returns a associated array of fields and formatter instances
+	 *
+	 * @return array
+	 */
+	protected function getFieldFormatters() {
+		$formatting = array();
+
+		$formatters = $this->report->getFieldFormatting();
+		if ($formatters && count($formatters)) {
+			foreach ($formatters as $field => $class) {
+				$formatting[$field] = new $class;
+			}
+		}
+
+		return $formatting;
+	}
+
+	/**
 	 * Restructures the data objects according to the settings of the report.
 	 */
 	protected function reformatDataObjects() {
@@ -110,7 +128,7 @@ abstract class ReportFormatter {
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
-		$formatters = $this->report->getFieldFormatting();
+		$formatters = $this->getFieldFormatters();
 
 		$i = 0;
 		$previousVals = array();
@@ -159,8 +177,7 @@ abstract class ReportFormatter {
 				$value = is_object($item) ? (method_exists($item, $field) ? $item->$field() : $item->$field) : $item[$field];
 
 				if(isset($formatters[$field])) {
-					$formatter = $formatters[$field];
-					$value = $formatter($value, $item);
+					$value = $formatters[$field]->format($value);
 				}
 
 				if (in_array($field, $colsToBlank)) {

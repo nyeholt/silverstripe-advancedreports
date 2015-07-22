@@ -33,13 +33,7 @@ class HtmlReportFormatter extends ReportFormatter {
 		$body = array();
 		$body[] = '<tbody>';
 
-		$formatters = $this->report->FieldFormatting;
-		$formatting = array();
-		if ($formatters && count($formatters->getValues())) {
-			foreach ($formatters->getValues() as $field => $class) {
-				$formatting[$field] = new $class;
-			}
-		}
+		$formatting = $this->getFieldFormatters();
 
 		$rowNum = 1;
 		foreach ($tableData as $row) {
