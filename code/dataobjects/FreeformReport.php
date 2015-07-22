@@ -63,7 +63,7 @@ class FreeformReport extends AdvancedReport {
 		$conditions->setName('ConditionsGroup');
 		$conditions->addExtraClass('dropdown');
 
-
+		// define the group for the sort field
 		$sortGroup = new FieldGroup(
 			'Sort',
 			new MultiValueDropdownField(
@@ -83,6 +83,8 @@ class FreeformReport extends AdvancedReport {
 		$sortGroup->setName('SortGroup');
 		$sortGroup->addExtraClass('dropdown');
 
+
+		// build a list of the formatters
 		$formatters = ClassInfo::implementorsOf('ReportFieldFormatter');
 		$fmtrs = array();
 		foreach ($formatters as $formatterClass) {
@@ -90,6 +92,24 @@ class FreeformReport extends AdvancedReport {
 			$fmtrs[$formatterClass] = $formatter->label();
 		}
 
+		// define the group for the custom field formatters
+		$fieldFormattingGroup = new FieldGroup(
+			_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'),
+			new MultiValueDropdownField(
+				'FieldFormattingField',
+				_t('AdvancedReport.FIELDFORMATTING', 'Field'),
+				$converted
+			),
+			new MultiValueDropdownField(
+				'FieldFormattingFormatter',
+				_t('AdvancedReport.FIELDFORMATTINGFORMATTER', 'Formatter'),
+				$fmtrs
+			)
+		);
+		$fieldFormattingGroup->setName('FieldFormattingGroup');
+		$fieldFormattingGroup->addExtraClass('dropdown');
+
+		// assemble the fieldlist
 		$fields = new FieldList(
 			new TextField('Title', _t('AdvancedReport.TITLE', 'Title')),
 			new TextareaField(
@@ -127,12 +147,7 @@ class FreeformReport extends AdvancedReport {
 				_t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'),
 				$converted
 			),
-			$kv = new KeyValueField(
-				'FieldFormatting',
-				_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'),
-				$converted,
-				$fmtrs
-			),
+			$fieldFormattingGroup,
 			new MultiValueDropdownField(
 				'ClearColumns',
 				_t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'),
