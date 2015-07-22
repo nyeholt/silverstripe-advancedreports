@@ -484,12 +484,14 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * Assumes the user has provided some values for the $this->ConditionFields etc. Converts
 	 * everything to an array that is run through the dbQuote() util method that handles all the
 	 * escaping
+	 *
+	 * @return array
 	 */
 	protected function getConditions() {
 		$reportFields = $this->getReportableFields();
 		$fields = $this->ConditionFields->getValues();
 		if (!$fields || !count($fields)) {
-			return '';
+			return array();
 		}
 
 		$ops = $this->ConditionOps->getValues();
