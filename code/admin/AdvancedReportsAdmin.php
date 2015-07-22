@@ -13,7 +13,7 @@ class AdvancedReportsAdmin extends ModelAdmin {
 	private static $model_importers = array();
 
 	private $managedModels;
-	
+
 	public function init() {
 		parent::init();
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');

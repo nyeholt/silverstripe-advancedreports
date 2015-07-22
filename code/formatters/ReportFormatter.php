@@ -4,7 +4,7 @@
  * An abstract representation of a report formatter.
  *
  * A report formatter takes in a given data object set and converts it into
- * an appropriate representation for output to the browser / file. 
+ * an appropriate representation for output to the browser / file.
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
@@ -14,7 +14,7 @@ abstract class ReportFormatter {
 
 	const ADD_IN_ROWS_TOTAL = '__AddInRows_Total';
 
-    protected $settings = array(
+	protected $settings = array(
 		'ShowDuplicateColValues'	=> false,	// rolls up columns that have duplicate values so that only the
 												// first instance is displayed.
 		'ShowHeader'				=> true
@@ -46,7 +46,7 @@ abstract class ReportFormatter {
 
 	/**
 	 * The formatted data
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $data;
@@ -96,14 +96,14 @@ abstract class ReportFormatter {
 
 			$report[$tableName] = $thisReport;
 		}
-		
+
 		$output = $this->formatReport($report);
 
 		return $output;
 	}
-	
+
 	/**
-	 * Restructures the data objects according to the settings of the report. 
+	 * Restructures the data objects according to the settings of the report.
 	 */
 	protected function reformatDataObjects() {
 		$this->data = array();
@@ -145,9 +145,9 @@ abstract class ReportFormatter {
 			$addToTable = isset($this->data[$tableName]) ? $this->data[$tableName] : array();
 
 			$rowSum = 0;
-			
+
 			foreach ($this->headers as $field => $display) {
-				// Account for our total summation of things. 
+				// Account for our total summation of things.
 				if ($field == self::ADD_IN_ROWS_TOTAL) {
 					if (is_object($item)) {
 						$item->$field = $rowSum;
@@ -198,7 +198,7 @@ abstract class ReportFormatter {
 			if (isset($this->headers[self::ADD_IN_ROWS_TOTAL])) {
 				$addCols[] = self::ADD_IN_ROWS_TOTAL;
 			}
-			
+
 			foreach ($this->data as $tableName => $data) {
 				$sums = array();
 
@@ -218,7 +218,7 @@ abstract class ReportFormatter {
 							} else {
 								$sums[$field] = $cur + $value;
 							}
-							
+
 						} else {
 							$sums[$field] = '';
 						}
@@ -249,10 +249,10 @@ abstract class ReportFormatter {
 	}
 
 	/**
-	 * Indicate what output format we're going to 
+	 * Indicate what output format we're going to
 	 */
 	abstract protected function getOutputFormat();
-	
+
 	/**
 	 * Create a header for the report
 	 */

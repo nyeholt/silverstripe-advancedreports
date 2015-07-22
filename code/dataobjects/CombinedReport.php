@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  *
  * @author <marcus@silverstripe.com.au>
  * @license BSD License http://www.silverstripe.org/bsd-license
@@ -11,47 +11,47 @@ class CombinedReport extends AdvancedReport {
 		'Title'						=> 'Varchar(255)',
 		'Description'				=> 'Text',
 	);
-	
+
 	public static $has_many = array(
 		'ChildReports'		=> 'RelatedReport',
 	);
-	
+
 	public function getCMSFields($params = null) {
 		$fields = parent::getCMSFields($params); //  new FieldSet();
-		
+
 		// tabbed or untabbed
 //		$fields->push(new TabSet("Root", $mainTab = new Tab("Main")));
 //		$mainTab->setTitle(_t('SiteTree.TABMAIN', "Main"));
-		
+
 		$fields->removeByName('Settings');
-		
+
 		$fields->addFieldToTab('Root.Main', new TextField('Title'));
-		
+
 		$fields->addFieldToTab('Root.Main', new TextareaField('Description'));
 
 		if ($this->ID) {
-			$fields->addFieldToTab('Root.Main', new OrderableComplexTableField($this, 'ChildReports', 'RelatedReport', null, null, '"CombinedReportID" = ' . $this->ID)); 
+			$fields->addFieldToTab('Root.Main', new OrderableComplexTableField($this, 'ChildReports', 'RelatedReport', null, null, '"CombinedReportID" = ' . $this->ID));
 		} else {
 			$fields->addFieldToTab('Root.Main', new LiteralField('Notice', 'Please save before adding related reports'));
 		}
-		
+
 		if ($this->ID) {
-			
+
 			$link = Controller::curr()->Link('preview');
 			$link = '<a href="' . $link . '" target="_blank">' . _t('AdvancedReports.PREVIEW', 'Preview').'</a>';
 			$fields->addFieldToTab('Root.Main', new LiteralField('Preview', $link));
 		}
-		
+
 		return $fields;
-		
+
 	}
-	
+
 	/**
-	 * Prepares this combined report 
-	 * 
-	 * Functions the same as the parent class, but we need to 
+	 * Prepares this combined report
+	 *
+	 * Functions the same as the parent class, but we need to
 	 * clone the Related reports too
-	 * 
+	 *
 	 * @return CombinedReport
 	 */
 	public function prepareAndGenerate() {
@@ -59,7 +59,7 @@ class CombinedReport extends AdvancedReport {
 		$report->ReportID = $this->ID;
 		$report->Title = $this->GeneratedReportTitle;
 		$report->write();
-		
+
 		$toClone = $this->ChildReports();
 		if ($toClone) {
 			foreach ($toClone as $child) {
@@ -74,17 +74,17 @@ class CombinedReport extends AdvancedReport {
 		if (self::$generate_pdf) {
 			$report->generateReport('pdf');
 		}
-		
+
 		return $report;
 	}
-	
+
 	/**
 	 * Creates a report in a specified format, returning a string which contains either
-	 * the raw content of the report, or an object that encapsulates the report (eg a PDF). 
-	 * 
+	 * the raw content of the report, or an object that encapsulates the report (eg a PDF).
+	 *
 	 * @param String $format
 	 * @param boolean $store
-	 *				Whether to store the created report. 
+	 *				Whether to store the created report.
 	 * @param array $parameters
 	 *				An array of parameters that will be used as dynamic replacements
 	 */
@@ -96,7 +96,7 @@ class CombinedReport extends AdvancedReport {
 			$convertTo = 'pdf';
 			$renderFormat = AdvancedReport::config()->conversion_formats[$format];
 		}
-		
+
 		$reports = $this->ChildReports();
 		if (!$reports->count()) {
 			return _t('AdvancedReports.NO_REPORTS_SELECTED', "No reports selected");
@@ -107,18 +107,18 @@ class CombinedReport extends AdvancedReport {
 			if (!$report->ReportID) {
 				continue;
 			}
-			
+
 			$params = $report->Parameters;
-			
+
 			$report = $report->Report();
-			
+
 			if ($params) {
 				$params = $params->getValues();
 				$baseParams = $report->ReportParams->getValues();
 				$params = array_merge($baseParams, $params);
 				$report->ReportParams = $params;
 			}
-			
+
 			$formatter = $report->getReportFormatter($renderFormat);
 
 			if($formatter) {
@@ -127,19 +127,19 @@ class CombinedReport extends AdvancedReport {
 				$contents[] = new ArrayData(array('ReportContent' => "Formatter for '$renderFormat' not found."));
 			}
 		}
-		
+
 		$classes = array_reverse(ClassInfo::ancestry(get_class($this)));
 		$templates = array(get_class($this) . '_' . $renderFormat);
-		
+
 		$date = DBField::create('SS_Datetime', time());
 		$this->Description = nl2br($this->Description);
-		
+
 		$reportData = array('Reports' => new DataObjectSet($contents), 'Format' => $format, 'Now' => $date);
 
 		$output = $this->customise($reportData)->renderWith($templates);
 
 		if (!$output) {
-			// put_contents fails if it's an empty string... 
+			// put_contents fails if it's an empty string...
 			$output = " ";
 		}
 
@@ -150,7 +150,7 @@ class CombinedReport extends AdvancedReport {
 				if (file_put_contents($outputFile, $output)) {
 					return new AdvancedReportOutput(null, $outputFile);
 				} else {
-					throw new Exception("Failed creating report in $outputFile"); 
+					throw new Exception("Failed creating report in $outputFile");
 				}
 
 			} else {
@@ -175,6 +175,6 @@ class CombinedReport extends AdvancedReport {
 			}
 		}
 	}
-	
-	
+
+
 }

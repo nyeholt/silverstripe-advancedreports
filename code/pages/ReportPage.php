@@ -1,7 +1,7 @@
 <?php
 /**
- * A Report Page is a frontend interface to creating and generating reports. 
- * 
+ * A Report Page is a frontend interface to creating and generating reports.
+ *
  * The page shown to the user that shows input fields for changing
  * the structure of the report, as well as all previously generated
  * instances of this report
