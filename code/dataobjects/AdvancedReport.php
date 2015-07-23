@@ -72,7 +72,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'AddCols'					=> 'MultiValueField',	// Which columns should be added ?
 		'NumericSort'				=> 'MultiValueField',	// columns to be numericly sorted
 		'ReportParams'				=> 'MultiValueField',	// provide some defaults for parameterised reports
-		'FieldFormatting'			=> 'MultiValueField',	// format the value that appears in some fields
+		'FieldFormattingField'		=> 'MultiValueField',	// list of fields which should be formated somehow
+		'FieldFormattingFormatter'	=> 'MultiValueField',	// list of used formatter for this
 	);
 
 	private $field_labels = array(
@@ -239,6 +240,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$conditionsGroup->setName('ConditionsGroup');
 		$conditionsGroup->addExtraClass('dropdown');
 
+		// define the group for the sort field
 		$sortGroup = new FieldGroup(
 			'Sort',
 			new MultiValueDropdownField(
@@ -258,6 +260,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$sortGroup->setName('SortGroup');
 		$sortGroup->addExtraClass('dropdown');
 
+
+		// build a list of the formatters
 		$formatters = ClassInfo::implementorsOf('ReportFieldFormatter');
 		$fmtrs = array();
 		foreach ($formatters as $formatterClass) {
@@ -265,6 +269,24 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			$fmtrs[$formatterClass] = $formatter->label();
 		}
 
+		// define the group for the custom field formatters
+		$fieldFormattingGroup = new FieldGroup(
+			_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'),
+			new MultiValueDropdownField(
+				'FieldFormattingField',
+				_t('AdvancedReport.FIELDFORMATTING', 'Field'),
+				$converted
+			),
+			new MultiValueDropdownField(
+				'FieldFormattingFormatter',
+				_t('AdvancedReport.FIELDFORMATTINGFORMATTER', 'Formatter'),
+				$fmtrs
+			)
+		);
+		$fieldFormattingGroup->setName('FieldFormattingGroup');
+		$fieldFormattingGroup->addExtraClass('dropdown');
+
+		// assemble the fieldlist
 		$fields = new FieldList(
 			new TextField('Title', _t('AdvancedReport.TITLE', 'Title')),
 			new TextareaField(
@@ -301,12 +323,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				_t('AdvancedReport.ADD_IN_ROWS', 'Provide totals for these columns'),
 				$converted
 			),
-			$kv = new KeyValueField(
-				'FieldFormatting',
-				_t('AdvancedReport.FORMAT_FIELDS', 'Custom field formatting'),
-				$converted,
-				$fmtrs
-			),
+			$fieldFormattingGroup,
 			new MultiValueDropdownField(
 				'ClearColumns',
 				_t('AdvancedReport.CLEARED_COLS', '"Cleared" columns'),
@@ -486,12 +503,14 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * Assumes the user has provided some values for the $this->ConditionFields etc. Converts
 	 * everything to an array that is run through the dbQuote() util method that handles all the
 	 * escaping
+	 *
+	 * @return array
 	 */
 	protected function getConditions() {
 		$reportFields = $this->getReportableFields();
 		$fields = $this->ConditionFields->getValues();
 		if (!$fields || !count($fields)) {
-			return '';
+			return array();
 		}
 
 		$ops = $this->ConditionOps->getValues();
@@ -694,8 +713,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Gets field formatting functions used for applying transformations to
-	 * values.
+	 * Gets field formatting functions used for applying transformations to values.
 	 *
 	 * The formatters should be a map of field name to callable. The callable
 	 * is passed the original value and current record.
@@ -703,7 +721,17 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @return array
 	 */
 	public function getFieldFormatting() {
-		return array();
+		$combined_array = array();
+
+		// make sure we dont try to combine are arrays and have at least 1 element
+		$keys = $this->FieldFormattingField->getValues();
+		$values = $this->FieldFormattingFormatter->getValues();
+
+		if (is_array($keys) && is_array($values) && count($keys) == count($values) && count($keys) > 0) {
+			$combined_array = array_combine($keys, $values);
+		}
+
+		return $combined_array;
 	}
 
 	/**

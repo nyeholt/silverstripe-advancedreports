@@ -30,13 +30,7 @@ class CsvReportFormatter extends ReportFormatter {
 	protected function createBody($tableName, $tableData) {
 		$body = array();
 
-		$formatters = $this->report->FieldFormatting;
-		$formatting = array();
-		if ($formatters && count($formatters->getValues())) {
-			foreach ($formatters->getValues() as $field => $class) {
-				$formatting[$field] = new $class;
-			}
-		}
+		$formatting = $this->getFieldFormatters();
 
 		foreach ($tableData as $row) {
 			$csvRow = array();
