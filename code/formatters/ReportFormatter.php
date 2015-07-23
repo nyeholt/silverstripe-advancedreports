@@ -70,10 +70,11 @@ abstract class ReportFormatter {
 	/**
 	 * Set or retrieve a configuration variable
 	 *
-	 * @param String $setting
+	 * @param string $setting
+	 * @param string $value
 	 * @param mixed $val
 	 */
-	public function config($setting, $val=null) {
+	public function config($setting, $val = null) {
 		if (!$val) {
 			return isset($this->settings[$setting]) ? $this->settings[$setting] : null;
 		}

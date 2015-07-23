@@ -366,7 +366,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Get a link to a specific instance of this report.
 	 *
-	 * @param String $type
+	 * @param string $type
+	 * @return string
 	 */
 	public function getFileLink($type) {
 		return $this->{strtoupper($type) . 'File'}()->Link();
@@ -397,6 +398,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * this so that when someone comes along later, it's not toooo wtfy
 	 *
 	 * @param string $field
+	 * @return string
 	 */
 	public function dottedFieldToUnique($field) {
 		return str_replace('.', '_', $field);
@@ -742,7 +744,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @param array $parameters
 	 *				An array of parameters that will be used as dynamic replacements
 	 */
-	public function createReport($format='html', $store = false) {
+	public function createReport($format = 'html', $store = false) {
 		Requirements::clear();
 		$convertTo = null;
 		$renderFormat = $format;
@@ -766,7 +768,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		foreach ($classes as $cls) {
 			if ($cls == 'AdvancedReport') {
 				// catchall
-				$templates[] = 'AdvancedReport' . '_' . $renderFormat;
+				$templates[] = 'AdvancedReport_' . $renderFormat;
 				break;
 			}
 			$templates[] = $cls . '_' . $renderFormat;
@@ -833,7 +835,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @param string $format
 	 */
-	public function generateReport($format='html') {
+	public function generateReport($format = 'html') {
 		$field = strtoupper($format).'FileID';
 		$storeIn = $this->getReportFolder();
 
@@ -916,13 +918,20 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			'EDIT_ADVANCED_REPORT' => array(
 				'name' => _t('AdvancedReport.EDIT', 'Create and edit Advanced Report pages'),
 				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
-				'help' => _t('AdvancedReport.ADVANCED_REPORTS_EDIT_HELP', 'Users with this permission can create new Report Pages from a Report Holder page'),
+				'help' => _t(
+					'AdvancedReport.ADVANCED_REPORTS_EDIT_HELP',
+					'Users with this permission can create new Report Pages from a Report Holder page'
+				),
 				'sort' => 400
 			),
 			'GENERATE_ADVANCED_REPORT' => array(
 				'name' => _t('AdvancedReport.GENERATE', 'Generate an Advanced Report'),
 				'category' => _t('AdvancedReport.ADVANCED_REPORTS_CATEGORY', 'Advanced Reports permissions'),
-				'help' => _t('AdvancedReport.ADVANCED_REPORTS_GENERATE_HELP', 'Users with this permission can generate reports based on existing report templates via a frontend Report Page'),
+				'help' => _t(
+					'AdvancedReport.ADVANCED_REPORTS_GENERATE_HELP',
+					'Users with this permission can generate reports based on ' .
+					'existing report templates via a frontend Report Page'
+				),
 				'sort' => 400
 			),
 		);
@@ -1043,7 +1052,7 @@ class AdvancedReportOutput {
 	public $filename;
 	public $content;
 
-	public function __construct($content = null, $filename=null) {
+	public function __construct($content = null, $filename = null) {
 		$this->filename = $filename;
 		$this->content = $content;
 	}
