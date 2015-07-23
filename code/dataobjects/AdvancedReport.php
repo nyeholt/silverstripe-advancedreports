@@ -568,31 +568,31 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$parts = array();
 		$allowed = self::config()->allowed_conditions;
 
-        if (is_array($filterArray) && count($filterArray)) {
-            foreach($filterArray as $field => $value) {
-                $fieldArgs = explode(':', $field);
-                $field = array_shift($fieldArgs);
-                $filterType = array_shift($fieldArgs);
-                $modifiers = $fieldArgs;
-                $originalFilter = $filterType;
-                if (count($modifiers)) {
-                    $originalFilter = $originalFilter . ':' . implode(':', $modifiers);
-                }
+		if (is_array($filterArray) && count($filterArray)) {
+			foreach($filterArray as $field => $value) {
+				$fieldArgs = explode(':', $field);
+				$field = array_shift($fieldArgs);
+				$filterType = array_shift($fieldArgs);
+				$modifiers = $fieldArgs;
+				$originalFilter = $filterType;
+				if (count($modifiers)) {
+				    $originalFilter = $originalFilter . ':' . implode(':', $modifiers);
+				}
 
-                if (!isset($allowed[$originalFilter])) {
-                    continue;
-                }
+				if (!isset($allowed[$originalFilter])) {
+				    continue;
+				}
 
-                // actually escape the field
-                if (!strpos($field, '.')) {
-                    $field = $this->tableSpacedField($baseType, $field);
-                }
+				// actually escape the field
+				if (!strpos($field, '.')) {
+				    $field = $this->tableSpacedField($baseType, $field);
+				}
 
-                $operator = $allowed[$originalFilter];
+				$operator = $allowed[$originalFilter];
 
-                $parts[$field . ' ' . $operator] = $value;
-            }
-        }
+				$parts[$field . ' ' . $operator] = $value;
+			}
+		}
 
 
 		$where = '';
