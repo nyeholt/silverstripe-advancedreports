@@ -441,6 +441,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 */
 	public function getHeaders() {
 		$headers = array();
+
 		$reportFields = $this->getReportableFields();
 		$sel = $this->ReportFields->getValues();
 		$headerTitles = $this->ReportHeaders->getValues();
@@ -455,12 +456,17 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$fieldName .= '_' . $selected[$field];
 			}
 
-			$headers[$fieldName] = isset($headerTitles[$i]) ? $headerTitles[$i] : (isset($reportFields[$field]) ? $reportFields[$field] : $field);
+			if (isset($headerTitles[$i])) {
+				$headers[$fieldName] = $headerTitles[$i];
+			} else {
+				$headers[$fieldName] = (isset($reportFields[$field]) ? $reportFields[$field] : $field);
+			}
 
 			if (!isset($selected[$field])) {
 				$selected[$field] = 1;
 			}
 		}
+
 		return $headers;
 	}
 
@@ -961,7 +967,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 			if (strpos($field, '.')) {
 				list($tb, $fl) = explode('.', $field);
-				$string .= $sep . $QUOTE_CHAR . $tb . $QUOTE_CHAR . '.' . $QUOTE_CHAR . $fl . $QUOTE_CHAR . " $operator " . $value;
+				$string .= $sep . $QUOTE_CHAR . $tb . $QUOTE_CHAR . '.' . $QUOTE_CHAR . $fl . $QUOTE_CHAR
+				 . " $operator " . $value;
 			} else {
 				if (is_numeric($field)) {
 					$string .= $sep . $value;
