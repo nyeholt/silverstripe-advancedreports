@@ -576,16 +576,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$modifiers = $fieldArgs;
 				$originalFilter = $filterType;
 				if (count($modifiers)) {
-				    $originalFilter = $originalFilter . ':' . implode(':', $modifiers);
+					$originalFilter = $originalFilter . ':' . implode(':', $modifiers);
 				}
 
 				if (!isset($allowed[$originalFilter])) {
-				    continue;
+					continue;
 				}
 
 				// actually escape the field
 				if (!strpos($field, '.')) {
-				    $field = $this->tableSpacedField($baseType, $field);
+					$field = $this->tableSpacedField($baseType, $field);
 				}
 
 				$operator = $allowed[$originalFilter];
