@@ -42,8 +42,13 @@ class FreeformReport extends AdvancedReport {
 		$dataTypes = array_merge(array('' => ''), $dataTypes);
 		$types = new MultiValueDropdownField('DataTypes', _t('AdvancedReport.DATA_TYPES', 'Data types'), $dataTypes);
 
-		$fieldsGroup = new FieldGroup('Fields',
-			$reportFieldsSelect = new MultiValueDropdownField('ReportFields', _t('AdvancedReport.REPORT_FIELDS', 'Report Fields'), $reportable)
+		$fieldsGroup = new FieldGroup(
+			'Fields',
+			$reportFieldsSelect = new MultiValueDropdownField(
+				'ReportFields',
+				_t('AdvancedReport.REPORT_FIELDS', 'Report Fields'),
+				$reportable
+			)
 		);
 
 		$fieldsGroup->push(new MultiValueTextField('ReportHeaders', _t('AdvancedReport.HEADERS', 'Header labels')));
@@ -55,8 +60,16 @@ class FreeformReport extends AdvancedReport {
 		$fieldsGroup->addExtraClass('advanced-report-fields dropdown');
 
 		$conditions = new FieldGroup('Conditions',
-			new MultiValueDropdownField('ConditionFields', _t('AdvancedReport.CONDITION_FIELDS', 'Condition Fields'), $reportable),
-			new MultiValueDropdownField('ConditionOps', _t('AdvancedReport.CONDITION_OPERATIONS', 'Op'), $this->config()->allowed_conditions),
+			new MultiValueDropdownField(
+				'ConditionFields',
+				_t('AdvancedReport.CONDITION_FIELDS', 'Condition Fields'),
+				$reportable
+			),
+			new MultiValueDropdownField(
+				'ConditionOps',
+				_t('AdvancedReport.CONDITION_OPERATIONS', 'Op'),
+				$this->config()->allowed_conditions
+			),
 			new MultiValueTextField('ConditionValues', _t('AdvancedReport.CONDITION_VALUES', 'Value'))
 		);
 

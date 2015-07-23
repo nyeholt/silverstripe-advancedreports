@@ -48,27 +48,38 @@ class RelatedReport extends DataObject  {
 		return $fields;
 	}
 
-		/**
-	 * @todo Should canCreate be a static method?
-	 *
+	/**
 	 * @param Member $member
 	 * @return boolean
 	 */
 	public function canCreate($member = null) {
-		if (!$member) {
-			$member = Member::currentUser();
-		}
-		return Permission::check('ADMIN', 'any', $member) || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
+		if (!$member) $member = Member::currentUser();
+
+		return false
+			 || Permission::check('ADMIN', 'any', $member)
+			 || Permission::check('CMS_ACCESS_AdvancedReportsAdmin', 'any', $member);
 	}
 
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
 	public function canView($member = null) {
 		return $this->CombinedReport()->canView($member);
 	}
 
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
 	public function canEdit($member = null) {
 		return $this->CombinedReport()->canEdit($member);
 	}
 
+	/**
+	 * @param Member $member
+	 * @return boolean
+	 */
 	public function canDelete($member = null) {
 		return $this->CombinedReport()->canDelete($member);
 	}

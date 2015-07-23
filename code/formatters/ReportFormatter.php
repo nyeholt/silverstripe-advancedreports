@@ -123,6 +123,8 @@ abstract class ReportFormatter {
 
 	/**
 	 * Restructures the data objects according to the settings of the report.
+	 *
+	 * @todo this method is too complex and should be refactored into smaller methods
 	 */
 	protected function reformatDataObjects() {
 		$this->data = array();
