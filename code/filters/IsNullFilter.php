@@ -6,14 +6,14 @@
  */
 
 class IsNullFilter extends SearchFilter {
-	
+
 	/**
 	 * Applies an 'Is' match  on a field value.
 	 */
 	public function apply(DataQuery $query) {
-		
+
 	}
-	
+
 	public function isEmpty() {
 		return false;
 	}

@@ -1,8 +1,8 @@
 <?php
 
 /**
- * An AdvancedReport type that allows a user to select the type they want 
- * to report on. 
+ * An AdvancedReport type that allows a user to select the type they want
+ * to report on.
  *
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
@@ -16,7 +16,7 @@ class DataObjectReport extends AdvancedReport {
 	public function getReportName() {
 		return "Generic Report";
 	}
-	
+
 	protected function getReportableFields() {
 		$fields = array(
 			'ID' => 'ID',
@@ -61,6 +61,9 @@ class DataObjectReport extends AdvancedReport {
 		return $fields;
 	}
 
+	/**
+	 * @return DataList
+	 */
 	public function getDataObjects() {
 		return DataList::create($this->ReportOn)
 			->filter($this->getFilter())
@@ -71,7 +74,7 @@ class DataObjectReport extends AdvancedReport {
 	 * Gets the filter we need for the report
 	 *
 	 * @param  $agreementFilter
-	 * @return string 
+	 * @return string
 	 */
 	protected function getFilter() {
 		$conditions = $this->getConditions();

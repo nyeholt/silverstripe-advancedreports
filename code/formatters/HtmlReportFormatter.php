@@ -10,7 +10,7 @@ class HtmlReportFormatter extends ReportFormatter {
 	protected function getOutputFormat() {
 		return 'html';
 	}
-	
+
 	/**
 	 * Create a header for the report
 	 */
@@ -33,14 +33,8 @@ class HtmlReportFormatter extends ReportFormatter {
 		$body = array();
 		$body[] = '<tbody>';
 
-		$formatters = $this->report->FieldFormatting;
-		$formatting = array();
-		if ($formatters && count($formatters->getValues())) {
-			foreach ($formatters->getValues() as $field => $class) {
-				$formatting[$field] = new $class;
-			}
-		}
-		
+		$formatting = $this->getFieldFormatters();
+
 		$rowNum = 1;
 		foreach ($tableData as $row) {
 			$oddEven = $rowNum % 2 == 0 ? 'even' : 'odd';
@@ -50,11 +44,11 @@ class HtmlReportFormatter extends ReportFormatter {
 				if ($value == '') {
 					$extraclass = 'noReportData';
 				}
-				
+
 				if (isset($formatting[$field])) {
 					$value = $formatting[$field]->format($value);
 				}
-				
+
 				$body[] = '<td class="reportcell '.$field.' '.$extraclass.'">'.$value.'</td>';
 			}
 			$body[] = '</tr>';

@@ -4,7 +4,7 @@
  * An abstract representation of a report formatter.
  *
  * A report formatter takes in a given data object set and converts it into
- * an appropriate representation for output to the browser / file. 
+ * an appropriate representation for output to the browser / file.
  *
  * @author marcus@silverstripe.com.au
  * @license http://silverstripe.org/bsd-license/
@@ -14,7 +14,7 @@ abstract class ReportFormatter {
 
 	const ADD_IN_ROWS_TOTAL = '__AddInRows_Total';
 
-    protected $settings = array(
+	protected $settings = array(
 		'ShowDuplicateColValues'	=> false,	// rolls up columns that have duplicate values so that only the
 												// first instance is displayed.
 		'ShowHeader'				=> true
@@ -46,7 +46,7 @@ abstract class ReportFormatter {
 
 	/**
 	 * The formatted data
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $data;
@@ -96,21 +96,39 @@ abstract class ReportFormatter {
 
 			$report[$tableName] = $thisReport;
 		}
-		
+
 		$output = $this->formatReport($report);
 
 		return $output;
 	}
-	
+
 	/**
-	 * Restructures the data objects according to the settings of the report. 
+	 * returns a associated array of fields and formatter instances
+	 *
+	 * @return array
+	 */
+	protected function getFieldFormatters() {
+		$formatting = array();
+
+		$formatters = $this->report->getFieldFormatting();
+		if ($formatters && count($formatters)) {
+			foreach ($formatters as $field => $class) {
+				$formatting[$field] = new $class;
+			}
+		}
+
+		return $formatting;
+	}
+
+	/**
+	 * Restructures the data objects according to the settings of the report.
 	 */
 	protected function reformatDataObjects() {
 		$this->data = array();
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
-		$formatters = $this->report->getFieldFormatting();
+		$formatters = $this->getFieldFormatters();
 
 		$i = 0;
 		$previousVals = array();
@@ -145,9 +163,9 @@ abstract class ReportFormatter {
 			$addToTable = isset($this->data[$tableName]) ? $this->data[$tableName] : array();
 
 			$rowSum = 0;
-			
+
 			foreach ($this->headers as $field => $display) {
-				// Account for our total summation of things. 
+				// Account for our total summation of things.
 				if ($field == self::ADD_IN_ROWS_TOTAL) {
 					if (is_object($item)) {
 						$item->$field = $rowSum;
@@ -170,8 +188,7 @@ abstract class ReportFormatter {
 				}
 
 				if(isset($formatters[$field])) {
-					$formatter = $formatters[$field];
-					$value = $formatter($value, $item);
+					$value = $formatters[$field]->format($value);
 				}
 
 				if (in_array($field, $colsToBlank)) {
@@ -209,7 +226,7 @@ abstract class ReportFormatter {
 			if (isset($this->headers[self::ADD_IN_ROWS_TOTAL])) {
 				$addCols[] = self::ADD_IN_ROWS_TOTAL;
 			}
-			
+
 			foreach ($this->data as $tableName => $data) {
 				$sums = array();
 
@@ -224,12 +241,20 @@ abstract class ReportFormatter {
 								$titleColumn = $prevField;
 							}
 							$cur = isset($sums[$field]) ? $sums[$field] : 0;
+
+							// use a report custom method for adding up or count/sum it up
+							//  based on the best possible assumptions we can make
 							if (method_exists($this->report, 'columnAdder')) {
 								$sums[$field] = $this->report->columnAdder($field, $cur, $value);
 							} else {
-								$sums[$field] = $cur + $value;
+								// summing up totals makes only sense if it is a number
+								// otherwise we count the number of items
+								if (is_numeric($value)) {
+									$sums[$field] = $cur + $value;
+								} else {
+									$sums[$field] = $cur + 1;
+								}
 							}
-							
 						} else {
 							$sums[$field] = '';
 						}
@@ -260,10 +285,10 @@ abstract class ReportFormatter {
 	}
 
 	/**
-	 * Indicate what output format we're going to 
+	 * Indicate what output format we're going to
 	 */
 	abstract protected function getOutputFormat();
-	
+
 	/**
 	 * Create a header for the report
 	 */
