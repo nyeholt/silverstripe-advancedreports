@@ -7,12 +7,17 @@
  */
 class HtmlReportFormatter extends ReportFormatter {
 
+	/**
+	 * @return string
+	 */
 	protected function getOutputFormat() {
 		return 'html';
 	}
 
 	/**
 	 * Create a header for the report
+	 *
+	 * @return string
 	 */
 	protected function createHeader($tableName) {
 		$header = array();
@@ -28,6 +33,8 @@ class HtmlReportFormatter extends ReportFormatter {
 
 	/**
 	 * Create a body for the report
+	 *
+	 * @return string
 	 */
 	protected function createBody($tableName, $tableData) {
 		$body = array();
@@ -62,15 +69,21 @@ class HtmlReportFormatter extends ReportFormatter {
 
 	/**
 	 * Format the header and body into a complete report output.
+	 *
+	 * @return string
 	 */
 	protected function formatReport($reportPieces) {
 		$bits = '';
+
 		foreach ($reportPieces as $tableName => $table) {
 			if ($tableName != ReportFormatter::DEFAULT_TABLE_NAME) {
 				$bits .= '<h2 class="reportTableName">'.$tableName."</h2>\n";
 			}
-			$bits .=  '<table class="reporttable" cellpadding="0" cellspacing="0">'.$table['Header'].$table['Body'].'</table>'."\n\n";
+
+			$bits .= '<table class="reporttable" cellpadding="0" cellspacing="0">'.
+				$table['Header'].$table['Body'].'</table>'."\n\n";
 		}
+
 		return $bits;
 	}
 }

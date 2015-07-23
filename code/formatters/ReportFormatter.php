@@ -139,8 +139,10 @@ abstract class ReportFormatter {
 		$paginateBy = $this->report->dottedFieldToUnique($this->report->PaginateBy);
 		$headerTemplate = $this->report->PageHeader ? $this->report->PageHeader : '$name';
 
-		$addCols = $this->report->AddInRows && count($this->report->AddInRows->getValues()) ? $this->report->AddInRows->getValues() : null;
-
+		$addCols = null;
+		if ($this->report->AddInRows && count($this->report->AddInRows->getValues())) {
+			$addCols = $this->report->AddInRows->getValues();
+		}
 		if (!$dataObjects) {
 			$this->data[$tableName] = array();
 			return;

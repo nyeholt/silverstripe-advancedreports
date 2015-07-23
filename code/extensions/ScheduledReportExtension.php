@@ -29,8 +29,15 @@ class ScheduledReportExtension extends DataExtension {
 			$fields->addFieldsToTab('Root.Schedule', array(
 				new TextField('ScheduledTitle', _t('AdvancedReports.SCHEDULED_TITLE', 'Title for scheduled report')),
 				$dt = new Datetimefield('FirstGeneration', _t('AdvancedReports.FIRST_GENERATION', 'First generation')),
-				new DropdownField('RegenerateEvery', _t('AdvancedReports.REGENERATE_EVERY', 'Regenerate every'), $this->owner->dbObject('RegenerateEvery')->enumValues()),
-				new TextField('RegenerateFree', _t('AdvancedReports.REGENERATE_FREE','Scheduled (in strtotime format from first generation)')),
+				new DropdownField(
+					'RegenerateEvery',
+					_t('AdvancedReports.REGENERATE_EVERY', 'Regenerate every'),
+					$this->owner->dbObject('RegenerateEvery')->enumValues()
+				),
+				new TextField(
+					'RegenerateFree',
+					_t('AdvancedReports.REGENERATE_FREE', 'Scheduled (in strtotime format from first generation)')
+				),
 				new TextField('SendReportTo', _t('AdvancedReports.SEND_TO', 'Send to email addresses')),
 			));
 
@@ -45,19 +52,26 @@ class ScheduledReportExtension extends DataExtension {
 			$dt->getTimeField()->setConfig('showdropdown', true);
 
 		} else {
-			$fields->addFieldToTab('Root.Schedule', new LiteralField('WARNING', 'You must install the Queued Jobs module to schedule reports'));
+			$fields->addFieldToTab(
+				'Root.Schedule',
+				new LiteralField('WARNING', 'You must install the Queued Jobs module to schedule reports')
+			);
 		}
 	}
 
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
+
 		if (!$this->owner->ScheduledTitle) {
 			$this->owner->ScheduledTitle = $this->owner->Title;
 		}
 
 		if ($this->owner->FirstGeneration) {
 			$changed = $this->owner->getChangedFields();
-			$changed = isset($changed['FirstGeneration']) || isset($changed['RegenerateEvery']) || isset($changed['RegenerateFree']);
+			$changed = false
+				|| isset($changed['FirstGeneration'])
+				|| isset($changed['RegenerateEvery'])
+				|| isset($changed['RegenerateFree']);
 
 			if ($changed && $this->owner->ScheduledJobID) {
 				if ($this->owner->ScheduledJob()->ID) {
