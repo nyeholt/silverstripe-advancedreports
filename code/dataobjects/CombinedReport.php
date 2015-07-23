@@ -32,7 +32,10 @@ class CombinedReport extends AdvancedReport {
 		if ($this->ID) {
 			$fields->addFieldToTab('Root.Main', new OrderableComplexTableField($this, 'ChildReports', 'RelatedReport', null, null, '"CombinedReportID" = ' . $this->ID));
 		} else {
-			$fields->addFieldToTab('Root.Main', new LiteralField('Notice', 'Please save before adding related reports'));
+			$fields->addFieldToTab(
+				'Root.Main',
+				new LiteralField('Notice', 'Please save before adding related reports')
+			);
 		}
 
 		if ($this->ID) {
@@ -88,7 +91,7 @@ class CombinedReport extends AdvancedReport {
 	 * @param array $parameters
 	 *				An array of parameters that will be used as dynamic replacements
 	 */
-	public function createReport($format='html', $store = false) {
+	public function createReport($format = 'html', $store = false) {
 		Requirements::clear();
 		$convertTo = null;
 		$renderFormat = $format;
@@ -175,6 +178,4 @@ class CombinedReport extends AdvancedReport {
 			}
 		}
 	}
-
-
 }
