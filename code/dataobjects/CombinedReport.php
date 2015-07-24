@@ -42,14 +42,12 @@ class CombinedReport extends AdvancedReport {
 		}
 
 		if ($this->ID) {
-
 			$link = Controller::curr()->Link('preview');
 			$link = '<a href="' . $link . '" target="_blank">' . _t('AdvancedReports.PREVIEW', 'Preview').'</a>';
 			$fields->addFieldToTab('Root.Main', new LiteralField('Preview', $link));
 		}
 
 		return $fields;
-
 	}
 
 	/**

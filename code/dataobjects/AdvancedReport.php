@@ -919,6 +919,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		return Permission::check('GENERATE_ADVANCED_REPORT', 'any', $member);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function providePermissions() {
 		return array(
 			'EDIT_ADVANCED_REPORT' => array(
