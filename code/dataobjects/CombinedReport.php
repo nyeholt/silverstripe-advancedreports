@@ -86,7 +86,7 @@ class CombinedReport extends AdvancedReport {
 	 * Creates a report in a specified format, returning a string which contains either
 	 * the raw content of the report, or an object that encapsulates the report (eg a PDF).
 	 *
-	 * @param String $format
+	 * @param string $format
 	 * @param boolean $store
 	 *				Whether to store the created report.
 	 * @param array $parameters

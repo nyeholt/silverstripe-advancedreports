@@ -470,7 +470,7 @@ class FreeformReport extends AdvancedReport {
 	 * mappings to the query object state. This has to be called
 	 * in any overloaded {@link SearchFilter->apply()} methods manually.
 	 *
-	 * @param String|array $relation The array/dot-syntax relation to follow
+	 * @param string|array $relation The array/dot-syntax relation to follow
 	 * @return The model class of the related item
 	 */
 	protected function applyRelation($modelClass, SQLQuery $query, $relation) {
