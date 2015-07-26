@@ -350,6 +350,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	public function prepareAndGenerate() {
 		$report = $this->duplicate(false);
 		$report->ReportID = $this->ID;
+		$report->Created = SS_Datetime::now();
+		$report->LastEdited = SS_Datetime::now();
 		$report->Title = $this->GeneratedReportTitle;
 		$report->write();
 
@@ -842,7 +844,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @param string $format
 	 */
 	public function generateReport($format = 'html') {
-		$field = strtoupper($format).'FileID';
+		$field = strtoupper($format) . 'FileID';
 		$storeIn = $this->getReportFolder();
 
 		// SS hates spaces in here :(
