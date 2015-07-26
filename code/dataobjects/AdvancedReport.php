@@ -357,10 +357,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		$report->generateReport('html');
 		$report->generateReport('csv');
-
-		if($this->config()->generate_pdf) {
-			$report->generateReport('pdf');
-		}
+		if($this->config()->generate_pdf) $report->generateReport('pdf');
 
 		return $report;
 	}
