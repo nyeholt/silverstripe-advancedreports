@@ -61,6 +61,8 @@ class CombinedReport extends AdvancedReport {
 	public function prepareAndGenerate() {
 		$report = $this->duplicate(false);
 		$report->ReportID = $this->ID;
+		$report->Created = SS_Datetime::now();
+		$report->LastEdited = SS_Datetime::now();
 		$report->Title = $this->GeneratedReportTitle;
 		$report->write();
 
@@ -68,6 +70,8 @@ class CombinedReport extends AdvancedReport {
 		if ($toClone) {
 			foreach ($toClone as $child) {
 				$clonedChild = $child->duplicate(false);
+				$clonedChild->Created = SS_Datetime::now();
+				$clonedChild->LastEdited = SS_Datetime::now();
 				$clonedChild->CombinedReportID = $report->ID;
 				$clonedChild->write();
 			}
@@ -75,9 +79,7 @@ class CombinedReport extends AdvancedReport {
 
 		$report->generateReport('html');
 		$report->generateReport('csv');
-		if (self::$generate_pdf) {
-			$report->generateReport('pdf');
-		}
+		if (self::$generate_pdf) $report->generateReport('pdf');
 
 		return $report;
 	}
