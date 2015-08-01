@@ -137,9 +137,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$columns = $config->getComponentByType('GridFieldDataColumns');
 
 		$columns->setDisplayFields(array(
-			'Title' => _t('AdvancedReports.TITLE', 'Title'),
-			'Created' => _t('AdvancedReports.GENERATED_AT', 'Generated At'),
-			'Links' => _t('AdvancedReports.LINKS', 'Links')
+			'Title' => _t('AdvancedReport.TITLE', 'Title'),
+			'Created' => _t('AdvancedReport.GENERATED_AT', 'Generated At'),
+			'Links' => _t('AdvancedReport.LINKS', 'Links')
 		));
 
 		$columns->setFieldFormatting(array(
@@ -302,7 +302,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			$sortGroup,
 			new MultiValueDropdownField(
 				'NumericSort',
-				_t('AdvancedReports.SORT_NUMERICALLY', 'Sort these fields numerically'),
+				_t('AdvancedReport.SORT_NUMERICALLY', 'Sort these fields numerically'),
 				$reportable
 			),
 			DropdownField::create('PaginateBy')

@@ -43,7 +43,7 @@ class CombinedReport extends AdvancedReport {
 
 		if ($this->ID) {
 			$link = Controller::curr()->Link('preview');
-			$link = '<a href="' . $link . '" target="_blank">' . _t('AdvancedReports.PREVIEW', 'Preview').'</a>';
+			$link = '<a href="' . $link . '" target="_blank">' . _t('AdvancedReport.PREVIEW', 'Preview') . '</a>';
 			$fields->addFieldToTab('Root.Main', new LiteralField('Preview', $link));
 		}
 
@@ -105,7 +105,7 @@ class CombinedReport extends AdvancedReport {
 
 		$reports = $this->ChildReports();
 		if (!$reports->count()) {
-			return _t('AdvancedReports.NO_REPORTS_SELECTED', "No reports selected");
+			return _t('AdvancedReport.NO_REPORTS_SELECTED', 'No reports selected');
 		}
 
 		$contents = array();

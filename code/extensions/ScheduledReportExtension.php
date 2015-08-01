@@ -27,24 +27,24 @@ class ScheduledReportExtension extends DataExtension {
 	public function updateCMSFields($fields) {
 		if (class_exists('AbstractQueuedJob')) {
 			$fields->addFieldsToTab('Root.Schedule', array(
-				new TextField('ScheduledTitle', _t('AdvancedReports.SCHEDULED_TITLE', 'Title for scheduled report')),
-				$dt = new Datetimefield('FirstGeneration', _t('AdvancedReports.FIRST_GENERATION', 'First generation')),
+				new TextField('ScheduledTitle', _t('AdvancedReport.SCHEDULED_TITLE', 'Title for scheduled report')),
+				$dt = new Datetimefield('FirstGeneration', _t('AdvancedReport.FIRST_GENERATION', 'First generation')),
 				new DropdownField(
 					'RegenerateEvery',
-					_t('AdvancedReports.REGENERATE_EVERY', 'Regenerate every'),
+					_t('AdvancedReport.REGENERATE_EVERY', 'Regenerate every'),
 					$this->owner->dbObject('RegenerateEvery')->enumValues()
 				),
 				new TextField(
 					'RegenerateFree',
-					_t('AdvancedReports.REGENERATE_FREE', 'Scheduled (in strtotime format from first generation)')
+					_t('AdvancedReport.REGENERATE_FREE', 'Scheduled (in strtotime format from first generation)')
 				),
-				new TextField('SendReportTo', _t('AdvancedReports.SEND_TO', 'Send to email addresses')),
+				new TextField('SendReportTo', _t('AdvancedReport.SEND_TO', 'Send to email addresses')),
 			));
 
 			if ($this->owner->ScheduledJobID) {
 				$jobTime = $this->owner->ScheduledJob()->StartAfter;
 				$fields->addFieldsToTab('Root.Schedule', array(
-					new ReadonlyField('NextRunDate', _t('AdvancedReports.NEXT_RUN_DATE', 'Next run date'), $jobTime)
+					new ReadonlyField('NextRunDate', _t('AdvancedReport.NEXT_RUN_DATE', 'Next run date'), $jobTime)
 				));
 			}
 
