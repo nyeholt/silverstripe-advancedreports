@@ -7,7 +7,9 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledReportExtension extends DataExtension {
-
+	/**
+	 * @var array
+	 */
 	private static $db = array(
 		'ScheduledTitle'		=> 'Varchar(255)',
 		'FirstGeneration'		=> 'SS_Datetime',
@@ -16,6 +18,9 @@ class ScheduledReportExtension extends DataExtension {
 		'SendReportTo'			=> 'Varchar(255)',
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
