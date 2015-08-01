@@ -3,7 +3,9 @@
  * Allows scheduling advanced reports to be generated at regular intervals.
  */
 class ScheduledAdvancedReportExtension extends DataExtension {
-
+	/**
+	 * @var array
+	 */
 	private static $db = array(
 		'Scheduled' => 'Boolean',
 		'ScheduledTitle' => 'Varchar(255)',
@@ -13,10 +15,16 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 		'EmailScheduledTo' => 'Varchar(255)'
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $has_one = array(
 		'QueuedJob' => 'QueuedJobDescriptor'
 	);
 
+	/**
+	 * @param  FieldList $fields
+	 */
 	public function updateCMSFields(FieldList $fields) {
 		Requirements::javascript('advancedreports/javascript/scheduled-report-settings.js');
 
@@ -101,5 +109,4 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 			}
 		}
 	}
-
 }
