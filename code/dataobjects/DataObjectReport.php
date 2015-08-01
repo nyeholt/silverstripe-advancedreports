@@ -54,7 +54,7 @@ class DataObjectReport extends AdvancedReport {
 		ksort($types);
 
 		$fields->insertAfter(
-			new DropdownField('ReportOn', _t('AdvancedReports.REPORT_ON', 'Report on'), $types),
+			new DropdownField('ReportOn', _t('AdvancedReport.REPORT_ON', 'Report on'), $types),
 			'Title'
 		);
 

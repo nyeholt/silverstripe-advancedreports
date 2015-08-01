@@ -139,7 +139,7 @@ class FreeformReport extends AdvancedReport {
 			$sortGroup,
 			new MultiValueDropdownField(
 				'NumericSort',
-				_t('AdvancedReports.SORT_NUMERICALLY', 'Sort these fields numerically'),
+				_t('AdvancedReport.SORT_NUMERICALLY', 'Sort these fields numerically'),
 				$reportable
 			),
 			DropdownField::create('PaginateBy')

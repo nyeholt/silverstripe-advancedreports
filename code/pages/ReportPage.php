@@ -104,13 +104,13 @@ class ReportPage_Controller extends Page_Controller {
 			new FieldList(
 				new TextField(
 					'Title',
-					_t('AdvancedReports.GENERATED_REPORT_TITLE', 'Generated report title'),
+					_t('AdvancedReport.GENERATED_REPORT_TITLE', 'Generated report title'),
 					$this->ReportTemplate()->Title
 				)
 			),
 			new FieldList(
-				new FormAction('doPreview', _t('AdvancedReports.PREVIEW', 'Preview')),
-				new FormAction('doGenerate', _t('AdvancedReports.GENERATE', 'Generate'))
+				new FormAction('doPreview', _t('AdvancedReport.PREVIEW', 'Preview')),
+				new FormAction('doGenerate', _t('AdvancedReport.GENERATE', 'Generate'))
 			),
 			new RequiredFields('Title')
 		);
