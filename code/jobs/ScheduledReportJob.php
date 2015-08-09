@@ -3,7 +3,10 @@
  * Schedules an {@link AdvancedReport} for future generation.
  */
 class ScheduledReportJob extends AbstractQueuedJob {
-
+	/**
+	 * @param AdvancedReport $report
+	 * @param integer $timesGenerated
+	 */
 	public function __construct($report = null, $timesGenerated = 0) {
 		if($report) {
 			$this->reportID = $report->ID;
@@ -19,6 +22,9 @@ class ScheduledReportJob extends AbstractQueuedJob {
 		return AdvancedReport::get()->byID($this->reportID);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getTitle() {
 		return 'Generate Report ' . $this->getReport()->ScheduledTitle;
 	}
