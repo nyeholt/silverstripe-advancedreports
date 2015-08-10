@@ -134,7 +134,6 @@ class CombinedReport extends AdvancedReport {
 			}
 		}
 
-		$classes = array_reverse(ClassInfo::ancestry(get_class($this)));
 		$templates = array(get_class($this) . '_' . $renderFormat);
 
 		$date = DBField::create('SS_Datetime', time());
