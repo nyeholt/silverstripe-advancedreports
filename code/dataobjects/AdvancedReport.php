@@ -43,15 +43,15 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @config
 	 */
 	private static $allowed_conditions = array(
-		'ExactMatch' => '=',
-		'ExactMatch:not' => '!=',
-		'GreaterThanOrEqual' => '>=',
-		'GreaterThan' => '>',
-		'LessThan' => '<',
-		'LessThanOrEqual' => '<=',
-		'ExactMatchMulti' => 'In List',
-		'IsNull' => 'IS NULL',
-		'IsNull:not' => 'IS NOT NULL'
+		'ExactMatch'				=> '=',
+		'ExactMatch:not'			=> '!=',
+		'GreaterThanOrEqual'		=> '>=',
+		'GreaterThan'				=> '>',
+		'LessThan'					=> '<',
+		'LessThanOrEqual'			=> '<=',
+		'ExactMatchMulti'			=> 'In List',
+		'IsNull'					=> 'IS NULL',
+		'IsNull:not'				=> 'IS NOT NULL'
 	);
 
 	private static $db = array(
