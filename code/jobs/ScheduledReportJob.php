@@ -73,5 +73,4 @@ class ScheduledReportJob extends AbstractQueuedJob {
 		$this->currentStep++;
 		$this->isComplete = true;
 	}
-
 }
