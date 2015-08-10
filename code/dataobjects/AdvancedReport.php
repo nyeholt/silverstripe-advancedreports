@@ -557,7 +557,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			$filter[$field . ':' . $op] = $val;
 		}
 
-		return $filter; // $this->dbQuote($filter);
+		return $filter;
 	}
 
 	/**
