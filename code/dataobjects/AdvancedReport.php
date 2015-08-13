@@ -346,6 +346,8 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 	/**
 	 * Prepare and generate this report into report instances
+	 *
+	 * @return AdvancedReport
 	 */
 	public function prepareAndGenerate() {
 		$report = $this->duplicate(false);
