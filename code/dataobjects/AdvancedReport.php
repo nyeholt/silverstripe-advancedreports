@@ -43,15 +43,15 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @config
 	 */
 	private static $allowed_conditions = array(
-		'ExactMatch'				=> '=',
-		'ExactMatch:not'			=> '!=',
-		'GreaterThanOrEqual'		=> '>=',
-		'GreaterThan'				=> '>',
-		'LessThan'					=> '<',
-		'LessThanOrEqual'			=> '<=',
-		'ExactMatchMulti'			=> 'In List',
-		'IsNull'					=> 'IS NULL',
-		'IsNull:not'				=> 'IS NOT NULL'
+		'ExactMatch' => '=',
+		'ExactMatch:not' => '!=',
+		'GreaterThanOrEqual' => '>=',
+		'GreaterThan' => '>',
+		'LessThan' => '<',
+		'LessThanOrEqual' => '<=',
+		'InList' => 'In List',
+		'IsNull' => 'IS NULL',
+		'IsNull:not' => 'IS NOT NULL'
 	);
 
 	private static $db = array(
@@ -204,6 +204,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$converted = array();
 
 		foreach($reportable as $k => $v) {
+			if(preg_match('/^(.*) +AS +"([^"]*)"/i', $k, $matches)) {
+				$k = $matches[2];
+			}
 			$converted[$this->dottedFieldToUnique($k)] = $v;
 		}
 
@@ -450,6 +453,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		for ($i = 0, $c = count($sel); $i < $c; $i++) {
 			$field = $sel[$i];
+			
+			if(preg_match('/^(.*) +AS +"([^"]*)"/i', $field, $matches)) {
+				$field = $matches[2];
+			}
+			
 			$fieldName = $this->dottedFieldToUnique($field);
 
 			if (isset($selected[$field])) {
@@ -483,7 +491,67 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	}
 
 	/**
-	 * Return an array of FieldValuePrefix => Callable
+	 * Get the selected report fields in a format suitable to be put in an
+	 * SQL select (an array format)
+	 * 
+	 * @return array
+	 */
+	protected function getReportFieldsForQuery() {
+		$fields = $this->ReportFields->getValues();
+		$reportFields = $this->getReportableFields();
+		$sortVals = $this->SortBy->getValues();
+		
+		if (!$sortVals) {
+			$sortVals = array();
+		}
+
+		$toSelect = array();
+		$selected = array();
+		
+		// make sure our sortvals are in the query too
+		foreach ($sortVals as $sortOpt) {
+			if (!in_array($sortOpt, $fields)) {
+				$fields[] = $sortOpt;
+			}
+		}
+		
+		foreach ($fields as $field) {
+			if (isset($reportFields[$field])) {
+				$fieldName = $field;
+				if (strpos($field, ' AS ')) {
+					// do nothing to the field??
+				} else if (strpos($field, '.')) {
+					$parts = explode('.', $field);
+					$sep = '';
+					$quotedField = implode('"."', $parts);
+					
+					if (isset($selected[$fieldName])) {
+						$selected[$fieldName]++;
+						$field = $field . '_' . $selected[$fieldName];
+					}
+					
+					$field = '"'.$quotedField . '" AS "' . $this->dottedFieldToUnique($field) . '"';
+				} else {
+					if (isset($selected[$fieldName])) {
+						$selected[$fieldName]++;
+						$field = '"'.$field.'" AS "'.$field . '_' . $selected[$fieldName].'"';
+					} else {
+						$field = '"'.$field.'"';
+					}
+				}
+				$toSelect[] = $field;
+			}
+
+			if (!isset($selected[$fieldName])) {
+				$selected[$fieldName] = 1;
+			}
+		}
+
+		return $toSelect;
+	}
+	
+	/**
+	 * Return an array of FieldValuePrefix => Callable 
 	 * filters for changing the values of the condition value
 	 *
 	 * This is so that you can do things like strtotime() in conditions for
@@ -513,7 +581,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @return array
 	 */
-	protected function getConditions() {
+	protected function getConditions($defaults = array()) {
 		$reportFields = $this->getReportableFields();
 		$fields = $this->ConditionFields->getValues();
 		if (!$fields || !count($fields)) {
@@ -523,7 +591,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$ops = $this->ConditionOps->getValues();
 		$vals = $this->ConditionValues->getValues();
 
-		$filter = array();
+		$filter = $defaults;
 		$conditions = $this->config()->allowed_conditions;
 		$conditionFilters = $this->getConditionFilters();
 
@@ -539,9 +607,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 			}
 
 			$originalVal = $val = $vals[$i];
-
+			$val = $this->applyFiltersToValue($originalVal);
+			
 			switch ($op) {
-				case 'IN': {
+				case 'InList': {
+					$op = 'ExactMatch';
 					$val = explode(',', $val);
 					break;
 				}
@@ -553,8 +623,6 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					break;
 				}
 			}
-
-			$val = $this->applyFiltersToValue($originalVal);
 
 			$filter[$field . ':' . $op] = $val;
 		}
@@ -727,7 +795,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @return array
 	 */
-	public function getFieldFormatting() {
+	public function getDefinedFormatting() {
 		$combined_array = array();
 
 		// make sure we dont try to combine are arrays and have at least 1 element

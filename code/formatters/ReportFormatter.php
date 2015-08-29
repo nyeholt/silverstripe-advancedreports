@@ -131,7 +131,7 @@ abstract class ReportFormatter {
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
-		$formatters = $this->getFieldFormatters();
+		$formatters = $this->report->getDefinedFormatting();
 
 		$i = 0;
 		$previousVals = array();

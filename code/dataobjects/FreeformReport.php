@@ -180,12 +180,17 @@ class FreeformReport extends AdvancedReport {
 		$this->extend('updateSettingsFields', $fields);
 		return $fields;
 	}
-
+	
+	protected function allowedTypes() {
+		return $this->config()->allowed_types;
+	}
+	
 	protected function getAvailableTypes() {
 		$types = array(); // self::$allowed_types;
 
 		$hasRoot = false;
 		$dataTypes = $this->DataTypes->getValues();
+		$allowedTypes = $this->allowedTypes();
 
 		if ($dataTypes) {
 			if (is_array($dataTypes)) {
@@ -199,16 +204,16 @@ class FreeformReport extends AdvancedReport {
 					}
 
 					// make sure we're only processing top level types
-					if (!isset($this->config()->allowed_types[$selected])) {
+					if (!isset($allowedTypes[$selected])) {
 						continue;
 					}
 
-					if (isset($this->config()->allowed_types[$selected])) {
+					if (isset($allowedTypes[$selected])) {
 						if ($hasRoot) {
 							continue;
 						}
 						$hasRoot = true;
-						$types[$selected] = $this->config()->allowed_types[$selected];
+						$types[$selected] = $allowedTypes[$selected];
 					}
 
 					// get all has_many, has_one, many_many field options
@@ -248,7 +253,7 @@ class FreeformReport extends AdvancedReport {
 		}
 
 		if (count($types) == 0) {
-			$types = $this->config()->allowed_types;
+			$types = $allowedTypes;
 		}
 
 		return $types;

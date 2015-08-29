@@ -30,10 +30,10 @@ class CombinedReport extends AdvancedReport {
 		$fields->addFieldToTab('Root.Main', new TextareaField('Description'));
 
 		if ($this->ID) {
-			$fields->addFieldToTab(
-				'Root.Main',
-				new GridField('ChildReports', 'Related Reports', $this->ChildReports())
-			);
+			$config = new GridFieldConfig_RecordEditor();
+			$grid = new GridField('ChildReports', 'Child reports', $this->ChildReports(), $config);
+			
+			$fields->addFieldToTab('Root.Main', $grid);
 		} else {
 			$fields->addFieldToTab(
 				'Root.Main',
