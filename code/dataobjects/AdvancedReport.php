@@ -578,10 +578,16 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * Assumes the user has provided some values for the $this->ConditionFields etc. Converts
 	 * everything to an array that is run through the dbQuote() util method that handles all the
 	 * escaping
+	 * 
+	 * @param $defaults
+	 *			Some hardcoded default conditions applied
+	 * 
+	 * @param $withOperands
+	 *			Whether the return should be as SQL operands instead of ORM filters
 	 *
 	 * @return array
 	 */
-	protected function getConditions($defaults = array()) {
+	protected function getConditions($defaults = array(), $withOperands = false) {
 		$reportFields = $this->getReportableFields();
 		$fields = $this->ConditionFields->getValues();
 		if (!$fields || !count($fields)) {
@@ -623,8 +629,19 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					break;
 				}
 			}
-
-			$filter[$field . ':' . $op] = $val;
+			
+			if ($withOperands) {
+				$rawOp = $conditions[$op];
+				if (is_array($val)) {
+					$rawOp = 'IN';
+					$filter[] = $field . ' ' . $rawOp . ' (' . implode(',', Convert::raw2sql($val)) .')';
+				} else {
+					$filter[] = $field . ' ' . $rawOp . ' \'' . Convert::raw2sql($val) . '\'';
+				}
+				
+			} else {
+				$filter[$field . ':' . $op] = $val;
+			}
 		}
 
 		return $filter;
@@ -1094,7 +1111,9 @@ class ConditionFilters {
 		if (!isset($args[1])) {
 			$args[1] = 'Y-m-d H:i:s';
 		}
-
+		if ($args[1] == 'stamp') {
+			return strtotime($args[0]);
+		}
 		return date($args[1], strtotime($args[0]));
 	}
 
