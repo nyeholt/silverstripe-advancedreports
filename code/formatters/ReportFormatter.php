@@ -86,7 +86,6 @@ abstract class ReportFormatter {
 	 */
 	public function format() {
 		$this->reformatDataObjects();
-
 		$report = array();
 
 		foreach ($this->data as $tableName => $data) {
@@ -131,7 +130,6 @@ abstract class ReportFormatter {
 
 		$dataObjects = $this->report->getDataObjects();
 		$colsToBlank = $this->report->getDuplicatedBlankingFields();
-		$formatters = $this->report->getDefinedFormatting();
 
 		$i = 0;
 		$previousVals = array();
@@ -190,10 +188,6 @@ abstract class ReportFormatter {
 					}
 				} else {
 					$value = $item[$field];
-				}
-
-				if(isset($formatters[$field])) {
-					$value = $formatters[$field]->format($value);
 				}
 
 				if (in_array($field, $colsToBlank)) {

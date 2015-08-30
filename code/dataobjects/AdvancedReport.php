@@ -795,7 +795,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @return array
 	 */
-	public function getDefinedFormatting() {
+	public function getFieldFormatting() {
 		$combined_array = array();
 
 		// make sure we dont try to combine are arrays and have at least 1 element
