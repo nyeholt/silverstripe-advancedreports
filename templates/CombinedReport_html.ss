@@ -96,7 +96,7 @@ div.logo { background: transparent url(images/report_logo.png) no-repeat;  width
 			<p>Generated $LastEdited.Nice</p>
 		</div>
 		
-		<% control Reports %>
+		<% loop Reports %>
 
 			<div class="landscape newPage">
 				<h2>$Title</h2>
@@ -106,7 +106,7 @@ div.logo { background: transparent url(images/report_logo.png) no-repeat;  width
 				$ReportContent
 			</div>
 		
-		<% end_control %>
+		<% end_loop %>
 
 
 	</body>

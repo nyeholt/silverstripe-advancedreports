@@ -136,10 +136,10 @@ class CombinedReport extends AdvancedReport {
 
 		$templates = array(get_class($this) . '_' . $renderFormat);
 
-		$date = DBField::create('SS_Datetime', time());
+		$date = DBField::create_field('SS_Datetime', time());
 		$this->Description = nl2br($this->Description);
 
-		$reportData = array('Reports' => new DataObjectSet($contents), 'Format' => $format, 'Now' => $date);
+		$reportData = array('Reports' => new ArrayList($contents), 'Format' => $format, 'Now' => $date);
 
 		$output = $this->customise($reportData)->renderWith($templates);
 

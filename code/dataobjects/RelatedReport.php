@@ -23,14 +23,14 @@ class RelatedReport extends DataObject  {
 	);
 
 	public function getCMSFields($params = null) {
-		$fields = new FieldSet();
+		$fields = new FieldList();
 
 		// tabbed or untabbed
 		$fields->push(new TabSet("Root", $mainTab = new Tab("Main")));
 		$mainTab->setTitle(_t('SiteTree.TABMAIN', "Main"));
 
 		$reports = array();
-		$reportObjs = DataObject::get('AdvancedReport', '"ReportID" = 0');
+		$reportObjs = AdvancedReport::get()->filter(array('ReportID' => 0));
 		if ($reportObjs && $reportObjs->count()) {
 			foreach ($reportObjs as $obj) {
 				if ($obj instanceof CombinedReport) {
