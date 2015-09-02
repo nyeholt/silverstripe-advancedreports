@@ -19,7 +19,8 @@ class RelatedReport extends DataObject  {
 	);
 
 	private static $summary_fields = array(
-		'Report.Title'
+		'Report.Title',
+		'Title',
 	);
 
 	public function getCMSFields($params = null) {
@@ -42,7 +43,9 @@ class RelatedReport extends DataObject  {
 
 		$fields->addFieldsToTab('Root.Main', array(
 			new DropdownField('ReportID', 'Related report', $reports),
+			new TextField('Title'),
 			new KeyValueField('Parameters', 'Parameters to pass to the report'),
+			new NumericField('Sort'),
 		));
 
 		return $fields;
