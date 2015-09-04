@@ -73,7 +73,10 @@ class CombinedReport extends AdvancedReport {
 
 		$report->generateReport('html');
 		$report->generateReport('csv');
-		if (self::$generate_pdf) $report->generateReport('pdf');
+		
+		if (class_exists('PdfRenditionService')) {
+            $report->generateReport('pdf');
+        }
 
 		return $report;
 	}
