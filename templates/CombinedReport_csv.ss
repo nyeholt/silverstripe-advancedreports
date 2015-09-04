@@ -1,3 +1,3 @@
-<% control Reports %>
+<% loop Reports %>
 $ReportContent
-<% end_control %>
+<% end_loop %>
