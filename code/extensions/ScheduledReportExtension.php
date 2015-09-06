@@ -29,7 +29,7 @@ class ScheduledReportExtension extends DataExtension {
 	 *
 	 * @param FieldSet $fields
 	 */
-	public function updateCMSFields($fields) {
+	public function updateCMSFields(FieldList $fields) {
 		if (class_exists('AbstractQueuedJob')) {
 			$fields->addFieldsToTab('Root.Schedule', array(
 				new TextField('ScheduledTitle', _t('AdvancedReport.SCHEDULED_TITLE', 'Title for scheduled report')),
