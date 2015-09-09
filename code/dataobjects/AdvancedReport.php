@@ -933,9 +933,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		// SS hates spaces in here :(
 		$name = preg_replace('/ +/', '-', trim($this->Title));
-		$name = preg_replace('/[^A-Za-z0-9.+_-]/', '', $name);
 		$name = $name . '.' . $format;
-
+		$name = FileNameFilter::create()->filter($name);
+		
 		$childId = $storeIn->constructChild($name);
 		$file = DataObject::get_by_id('File', $childId);
 
