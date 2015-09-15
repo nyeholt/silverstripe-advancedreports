@@ -13,7 +13,7 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 
 		if($this->record->isInDB() && $this->record->canGenerate()) {
 			$form->Actions()->merge(array(
-				FormAction::create('preview', '')
+				FormAction::create('reportpreview', '')
 					->setTitle(_t('AdvancedReport.PREVIEW', 'Preview'))
 					->setAttribute('target', '_blank')
 					->setAttribute('data-icon', 'preview'),
@@ -25,7 +25,7 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 		return $form;
 	}
 
-	public function preview($data, $form) {
+	public function reportpreview($data, $form) {
 		$data = $form->getData();
 		$format = $data['PreviewFormat'];
 

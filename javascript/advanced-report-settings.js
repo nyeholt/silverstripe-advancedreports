@@ -15,14 +15,14 @@
 		}
 	})
 	
-	$(document).on('click', '#action_preview', function (e) {
+	$(document).on('click', '#action_reportpreview', function (e) {
 		e.preventDefault();
 		var form = $(this).parents('form');
 		var url = form.attr('action');
 		var base = $('base').attr('href');
 
 
-		url = base + url + '?action_preview=1&' + form.serialize();
+		url = base + url + '?action_reportpreview=1&' + form.serialize();
 		window.open(url);
 		return false;
 	})
