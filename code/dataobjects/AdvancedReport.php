@@ -109,6 +109,13 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'Title',
 		'Description'
 	);
+	
+	/**
+	 * Should generated report contents be stored on the file object?
+	 *
+	 * @var boolean
+	 */
+	private static $store_file_content = false;
 
 	/**
 	 * Gets the form fields for display in the CMS.
@@ -147,7 +154,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$result = '';
 				$links = array('html', 'csv');
 
-				if(Config::inst()->get('AdvancedReport', 'generate_pdf')) {
+				if($item->config()->generate_pdf) {
 					$links[] = 'pdf';
 				}
 
@@ -374,7 +381,17 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @return string
 	 */
 	public function getFileLink($type) {
-		return $this->{strtoupper($type) . 'File'}()->Link();
+		$file = $this->{strtoupper($type) . 'File'}(); // ->Link();
+		if ($this->config()->store_file_content) {
+			return Controller::join_links(
+				'admin/advanced-reports/AdvancedDisruptionReport/EditForm/field/AdvancedDisruptionReport/item',
+				$this->ID,
+				'viewreport',
+				$file->Name
+			);
+		} else {
+			return $file->Link();
+		}
 	}
 
 	/**
@@ -953,7 +970,12 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		if (is_object($output)) {
 			if (file_exists($output->filename)) {
-				copy($output->filename, $file->getFullPath());
+				if ($this->config()->store_file_content) {
+					$file->Content = base64_encode(file_get_contents($output->filename));
+					$file->write();
+				} else {
+					copy($output->filename, $file->getFullPath());
+				}
 			}
 		}
 
