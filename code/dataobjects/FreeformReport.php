@@ -290,12 +290,15 @@ class FreeformReport extends AdvancedReport {
 			$fields["{$alias}ID"] = $fieldPrefix . 'ID';
 			$fields["{$alias}Created"] = $fieldPrefix . 'Created';
 			$fields["{$alias}LastEdited"] = $fieldPrefix . 'LastEdited';
-
-			foreach (Config::inst()->get($type, 'db', $includeInheritedDbFields) as $field => $type) {
-				if($type == 'MultiValueField') {
-					$fields["$alias{$field}Value"] = $fieldPrefix . $field;
-				} else {
-					$fields["$alias$field"] = $fieldPrefix . $field;
+			
+			$dbDefined = Config::inst()->get($type, 'db', $includeInheritedDbFields);
+			if (is_array($dbDefined)) {
+				foreach ($dbDefined as $field => $type) {
+					if($type == 'MultiValueField') {
+						$fields["$alias{$field}Value"] = $fieldPrefix . $field;
+					} else {
+						$fields["$alias$field"] = $fieldPrefix . $field;
+					}
 				}
 			}
 		}
