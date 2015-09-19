@@ -180,11 +180,11 @@ class FreeformReport extends AdvancedReport {
 		$this->extend('updateSettingsFields', $fields);
 		return $fields;
 	}
-	
+
 	protected function allowedTypes() {
 		return $this->config()->allowed_types;
 	}
-	
+
 	protected function getAvailableTypes() {
 		$types = array(); // self::$allowed_types;
 
@@ -290,7 +290,7 @@ class FreeformReport extends AdvancedReport {
 			$fields["{$alias}ID"] = $fieldPrefix . 'ID';
 			$fields["{$alias}Created"] = $fieldPrefix . 'Created';
 			$fields["{$alias}LastEdited"] = $fieldPrefix . 'LastEdited';
-			
+
 			$dbDefined = Config::inst()->get($type, 'db', $includeInheritedDbFields);
 			if (is_array($dbDefined)) {
 				foreach ($dbDefined as $field => $type) {

@@ -32,7 +32,7 @@ class CombinedReport extends AdvancedReport {
 		if ($this->ID) {
 			$config = new GridFieldConfig_RecordEditor();
 			$grid = new GridField('ChildReports', 'Child reports', $this->ChildReports(), $config);
-			
+
 			$fields->addFieldToTab('Root.Main', $grid);
 		} else {
 			$fields->addFieldToTab(
@@ -73,7 +73,7 @@ class CombinedReport extends AdvancedReport {
 
 		$report->generateReport('html');
 		$report->generateReport('csv');
-		
+
 		if (class_exists('PdfRenditionService')) {
             $report->generateReport('pdf');
         }
