@@ -109,7 +109,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'Title',
 		'Description'
 	);
-	
+
 	/**
 	 * Should generated report contents be stored on the file object?
 	 *
@@ -470,11 +470,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		for ($i = 0, $c = count($sel); $i < $c; $i++) {
 			$field = $sel[$i];
-			
+
 			if(preg_match('/^(.*) +AS +"([^"]*)"/i', $field, $matches)) {
 				$field = $matches[2];
 			}
-			
+
 			$fieldName = $this->dottedFieldToUnique($field);
 
 			if (isset($selected[$field])) {
@@ -510,28 +510,28 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Get the selected report fields in a format suitable to be put in an
 	 * SQL select (an array format)
-	 * 
+	 *
 	 * @return array
 	 */
 	protected function getReportFieldsForQuery() {
 		$fields = $this->ReportFields->getValues();
 		$reportFields = $this->getReportableFields();
 		$sortVals = $this->SortBy->getValues();
-		
+
 		if (!$sortVals) {
 			$sortVals = array();
 		}
 
 		$toSelect = array();
 		$selected = array();
-		
+
 		// make sure our sortvals are in the query too
 		foreach ($sortVals as $sortOpt) {
 			if (!in_array($sortOpt, $fields)) {
 				$fields[] = $sortOpt;
 			}
 		}
-		
+
 		foreach ($fields as $field) {
 			if (isset($reportFields[$field])) {
 				$fieldName = $field;
@@ -541,12 +541,12 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					$parts = explode('.', $field);
 					$sep = '';
 					$quotedField = implode('"."', $parts);
-					
+
 					if (isset($selected[$fieldName])) {
 						$selected[$fieldName]++;
 						$field = $field . '_' . $selected[$fieldName];
 					}
-					
+
 					$field = '"'.$quotedField . '" AS "' . $this->dottedFieldToUnique($field) . '"';
 				} else {
 					if (isset($selected[$fieldName])) {
@@ -566,9 +566,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 		return $toSelect;
 	}
-	
+
 	/**
-	 * Return an array of FieldValuePrefix => Callable 
+	 * Return an array of FieldValuePrefix => Callable
 	 * filters for changing the values of the condition value
 	 *
 	 * This is so that you can do things like strtotime() in conditions for
@@ -595,10 +595,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * Assumes the user has provided some values for the $this->ConditionFields etc. Converts
 	 * everything to an array that is run through the dbQuote() util method that handles all the
 	 * escaping
-	 * 
+	 *
 	 * @param $defaults
 	 *			Some hardcoded default conditions applied
-	 * 
+	 *
 	 * @param $withOperands
 	 *			Whether the return should be as SQL operands instead of ORM filters
 	 *
@@ -631,7 +631,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 
 			$originalVal = $val = $vals[$i];
 			$val = $this->applyFiltersToValue($originalVal);
-			
+
 			switch ($op) {
 				case 'InList': {
 					$op = 'ExactMatch';
@@ -646,7 +646,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 					break;
 				}
 			}
-			
+
 			if ($withOperands) {
 				$rawOp = $conditions[$op];
 				if (is_array($val)) {
@@ -655,7 +655,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				} else {
 					$filter[] = $field . ' ' . $rawOp . ' \'' . Convert::raw2sql($val) . '\'';
 				}
-				
+
 			} else {
 				$filter[$field . ':' . $op] = $val;
 			}
@@ -952,7 +952,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$name = preg_replace('/ +/', '-', trim($this->Title));
 		$name = $name . '.' . $format;
 		$name = FileNameFilter::create()->filter($name);
-		
+
 		$childId = $storeIn->constructChild($name);
 		$file = DataObject::get_by_id('File', $childId);
 

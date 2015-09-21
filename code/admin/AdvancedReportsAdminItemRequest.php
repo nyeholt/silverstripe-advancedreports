@@ -25,10 +25,10 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 
 		return $form;
 	}
-	
+
 	/**
 	 * Handler to view a generated report file
-	 * 
+	 *
 	 * @param type $data
 	 * @param type $form
 	 */
@@ -41,7 +41,7 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 		}
 		$reportID = (int) $request->param('ID');
 		$fileID = (int) $request->param('OtherID');
-		
+
 		$report = AdvancedReport::get()->byID($reportID);
 		if (!$report || !$report->canView()) {
 			return $this->httpError(404);
@@ -50,13 +50,13 @@ class AdvancedReportsAdminItemRequest extends GridFieldDetailForm_ItemRequest {
 		if (!$file || !strlen($file->Content)) {
 			return $this->httpError(404);
 		}
-		
+
 		$mimeType = HTTP::get_mime_type($file->Name);
 		header("Content-Type: {$mimeType}; name=\"" . addslashes($file->Name) . "\"");
 		header("Content-Disposition: attachment; filename=" . addslashes($file->Name));
 		header("Content-Length: {$file->getSize()}");
 		header("Pragma: ");
-		
+
 		session_write_close();
 		ob_flush();
 		flush();
