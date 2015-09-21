@@ -73,7 +73,7 @@ class DataObjectReport extends AdvancedReport {
 	/**
 	 * Gets the filter we need for the report
 	 *
-	 * @param  $agreementFilter
+	 * @param $agreementFilter
 	 * @return string
 	 */
 	protected function getFilter() {

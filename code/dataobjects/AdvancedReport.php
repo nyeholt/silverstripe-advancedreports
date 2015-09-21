@@ -987,7 +987,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	/**
 	 * Returns a report formatter instance for an output format.
 	 *
-	 * @param  string $format
+	 * @param string $format
 	 * @return ReportFormatter
 	 */
 	public function getReportFormatter($format) {
