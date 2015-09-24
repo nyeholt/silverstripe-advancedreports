@@ -23,7 +23,7 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 	);
 
 	/**
-	 * @param  FieldList $fields
+	 * @param FieldList $fields
 	 */
 	public function updateCMSFields(FieldList $fields) {
 		Requirements::javascript('advancedreports/javascript/scheduled-report-settings.js');
