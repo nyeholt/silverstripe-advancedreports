@@ -64,7 +64,7 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 					array('link' => 'http://php.net/strtotime')
 				)
 			),
-			new EmailField(
+			new TextField(
 				'EmailScheduledTo',
 				_t('AdvancedReport.EMAIL_SCHEDULED_TO', 'Email scheduled reports to')
 			),
