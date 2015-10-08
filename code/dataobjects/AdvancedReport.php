@@ -1054,7 +1054,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		);
 	}
 
-	function dbQuote($filter = array(), $join = " AND ") {
+	public function dbQuote($filter = array(), $join = " AND ") {
 		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
 
 		$string = '';
