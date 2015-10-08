@@ -5,7 +5,7 @@
 class ScheduledReportJob extends AbstractQueuedJob {
 	/**
 	 * @param AdvancedReport $report
-	 * @param integer $timesGenerated
+	 * @param int $timesGenerated
 	 */
 	public function __construct($report = null, $timesGenerated = 0) {
 		if($report) {
