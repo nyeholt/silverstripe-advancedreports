@@ -34,6 +34,10 @@ class CombinedReport extends AdvancedReport {
 			$grid = new GridField('ChildReports', 'Child reports', $this->ChildReports(), $config);
 
 			$fields->addFieldToTab('Root.Main', $grid);
+			
+			if (class_exists('GridFieldOrderableRows')) {
+				$config->addComponent(new GridFieldOrderableRows());
+			}
 		} else {
 			$fields->addFieldToTab(
 				'Root.Main',

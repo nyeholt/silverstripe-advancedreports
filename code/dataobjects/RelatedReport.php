@@ -22,6 +22,8 @@ class RelatedReport extends DataObject  {
 		'Report.Title',
 		'Title',
 	);
+	
+	private static $default_sort = 'Sort ASC';
 
 	public function getCMSFields($params = null) {
 		$fields = new FieldList();
