@@ -117,19 +117,19 @@ class CombinedReport extends AdvancedReport {
 
 			$params = $report->Parameters;
 
-			$report = $report->Report();
+			$basereport = $report->Report();
 
 			if ($params) {
 				$params = $params->getValues();
-				$baseParams = $report->ReportParams->getValues();
+				$baseParams = $basereport->ReportParams->getValues();
 				$params = array_merge($baseParams, $params);
-				$report->ReportParams = $params;
+				$basereport->ReportParams = $params;
 			}
 
-			$formatter = $report->getReportFormatter($renderFormat);
+			$formatter = $basereport->getReportFormatter($renderFormat);
 
 			if($formatter) {
-				$contents[] = $report->customise(array('ReportContent' => $formatter->format()));
+				$contents[] = $basereport->customise(array('ReportContent' => $formatter->format(), 'Title' => $report->Title));
 			} else {
 				$contents[] = new ArrayData(array('ReportContent' => "Formatter for '$renderFormat' not found."));
 			}
