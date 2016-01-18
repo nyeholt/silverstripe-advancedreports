@@ -110,14 +110,14 @@ class CombinedReport extends AdvancedReport {
 		}
 
 		$contents = array();
-		foreach ($reports as $report) {
-			if (!$report->ReportID) {
+		foreach ($reports as $linkedReport) {
+			if (!$linkedReport->ReportID) {
 				continue;
 			}
 
-			$params = $report->Parameters;
+			$params = $linkedReport->Parameters;
 
-			$report = $report->Report();
+			$report = $linkedReport->Report();
 
 			if ($params) {
 				$params = $params->getValues();
@@ -129,7 +129,7 @@ class CombinedReport extends AdvancedReport {
 			$formatter = $report->getReportFormatter($renderFormat);
 
 			if($formatter) {
-				$contents[] = $report->customise(array('ReportContent' => $formatter->format()));
+				$contents[] = $report->customise(array('ReportContent' => $formatter->format(), 'Title' => $linkedReport->Title));
 			} else {
 				$contents[] = new ArrayData(array('ReportContent' => "Formatter for '$renderFormat' not found."));
 			}
