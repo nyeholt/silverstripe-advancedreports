@@ -14,7 +14,7 @@
 			});
 		}
 	})
-	
+
 	$(document).on('click', '#action_reportpreview', function (e) {
 		e.preventDefault();
 		var form = $(this).parents('form');
