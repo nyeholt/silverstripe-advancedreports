@@ -9,7 +9,7 @@
 class FreeformReport extends AdvancedReport {
 
 	private static $allow_grouping = true;
-	
+
 	private static $db = array(
 		'DataTypes'			=> 'MultiValueField',
 	);
@@ -169,18 +169,18 @@ class FreeformReport extends AdvancedReport {
 				$converted
 			)
 		);
-		
+
 		if ($this->config()->allow_grouping) {
 			// GroupBy
 			$groupingGroup = new FieldGroup(
 				'Grouping',
 				new MultiValueDropdownField(
-					'GroupBy', 
+					'GroupBy',
 					_t('AdvancedReport.GROUPBY_FIELDS', 'Group by fields'),
 					$reportable
 				),
 				new MultiValueDropdownField(
-					'SumFields', 
+					'SumFields',
 					_t('AdvancedReport.SUM_FIELDS', 'SUM fields'),
 					$reportable
 				)
@@ -384,7 +384,7 @@ class FreeformReport extends AdvancedReport {
 		$fields = array();
 
 		$sum = $this->SumFields->getValues();
-		
+
 		if ($selectedFields) {
 			foreach ($selectedFields as $field) {
 				if (!isset($allFields[$field])) {
@@ -431,7 +431,7 @@ class FreeformReport extends AdvancedReport {
 			if (strpos($name, 'tbl_') === 0) {
 				$fieldAlias = $this->dottedFieldToUnique($name);
 				$remappedFields[$fieldAlias] = '"' . Convert::raw2sql($class) . '"."' . Convert::raw2sql($field) . '"';
-				
+
 				if (in_array($name, $sum)) {
 					$remappedFields[$fieldAlias] = 'SUM(' . $remappedFields[$fieldAlias] .')';
 				}
@@ -484,7 +484,7 @@ class FreeformReport extends AdvancedReport {
 		$filter = $this->getConditions();
 		$where = $this->getWhereClause($filter, $baseTable);
 		$query->setWhere($where);
-		
+
 		$groupBy = $this->GroupBy->getValues();
 		if (count($groupBy)) {
 			$query->setGroupBy($groupBy);

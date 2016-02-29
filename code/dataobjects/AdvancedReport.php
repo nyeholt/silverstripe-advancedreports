@@ -35,10 +35,10 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 * @config
 	 */
 	private static $generate_pdf = false;
-	
+
 	/**
-	 * Do we allow groupby and sum settings? 
-	 * 
+	 * Do we allow groupby and sum settings?
+	 *
 	 * Child classes can set this to true
 	 *
 	 * @var boolean
@@ -74,11 +74,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		'ConditionValues'			=> 'MultiValueField',
 		'PaginateBy'				=> 'Varchar(64)',		// a field used to separate tables (eg financial years)
 		'PageHeader'				=> 'Varchar(64)',		// used as a keyworded string for pages
-		
+
 		// optional fields that child classes will need to provide implementation for
 		'GroupBy'					=> 'MultiValueField',
 		'SumFields'					=> 'MultiValueField',
-		
+
 		'SortBy'					=> 'MultiValueField',
 		'SortDir'					=> 'MultiValueField',
 		'ClearColumns'				=> 'MultiValueField',
@@ -263,7 +263,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		);
 		$conditionsGroup->setName('ConditionsGroup');
 		$conditionsGroup->addExtraClass('dropdown');
-		
+
 		// define the group for the sort field
 		$sortGroup = new FieldGroup(
 			'Sort',
@@ -354,18 +354,18 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				$converted
 			)
 		);
-		
+
 		if ($this->config()->allow_grouping) {
 			// GroupBy
 			$groupingGroup = new FieldGroup(
 				'Grouping',
 				new MultiValueDropdownField(
-					'GroupBy', 
+					'GroupBy',
 					_t('AdvancedReport.GROUPBY_FIELDS', 'Group by fields'),
 					$reportable
 				),
 				new MultiValueDropdownField(
-					'SumFields', 
+					'SumFields',
 					_t('AdvancedReport.SUM_FIELDS', 'SUM fields'),
 					$reportable
 				)
