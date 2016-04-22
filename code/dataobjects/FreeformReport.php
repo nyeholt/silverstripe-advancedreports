@@ -322,6 +322,15 @@ class FreeformReport extends AdvancedReport {
 					}
 				}
 			}
+            if (class_exists($type)) {
+                $sng = singleton($type);
+                if (method_exists($sng, 'getAdvancedReportableFields')) {
+                    $defined = $sng->getAdvancedReportableFields($alias);
+                    foreach ($defined as $name => $source) {
+                        $fields["$alias$name"] = $fieldPrefix . $name;
+                    }
+                }
+            }
 		}
 
 		return $fields;
@@ -384,6 +393,7 @@ class FreeformReport extends AdvancedReport {
 		$fields = array();
 
 		$sum = $this->SumFields->getValues();
+        $sum = $sum ? $sum : array();
 		
 		if ($selectedFields) {
 			foreach ($selectedFields as $field) {
@@ -396,7 +406,12 @@ class FreeformReport extends AdvancedReport {
 		}
 
 		$baseTable = null;
-		$relatedTables = array();
+        
+		// stores the relationship name-to-aliasname mapping
+        $relatedTables = array();
+        
+        // stores the tbl_{one}_{two} alias name-to-class-type mapping
+        $aliasToDataType = array();
 
 		foreach ($tables as $typeName => $alias) {
 			if (strpos($typeName, '.')) {
@@ -425,26 +440,46 @@ class FreeformReport extends AdvancedReport {
 				$class = $baseTable;
 				$field = $name;
 			}
+            $typeFields  = array();
 
+            if (class_exists($class)) {
+                $instance = singleton($class);
+                $typeFields = method_exists($instance, 'getAdvancedReportableFields') ? $instance->getAdvancedReportableFields() : array();
+            } else if ($dataType = $this->fieldAliasToDataType($class)) {
+                $instance = singleton($dataType);
+                $typeFields = method_exists($instance, 'getAdvancedReportableFields') ? $instance->getAdvancedReportableFields($class.'.') : array();
+            }
+            
+            $fieldAlias = '';
+            
 			// if the name is prefixed, we need to figure out what the actual $class is from the
 			// remote join
 			if (strpos($name, 'tbl_') === 0) {
 				$fieldAlias = $this->dottedFieldToUnique($name);
-				$remappedFields[$fieldAlias] = '"' . Convert::raw2sql($class) . '"."' . Convert::raw2sql($field) . '"';
+                $selectField = '"' . Convert::raw2sql($class) . '"."' . Convert::raw2sql($field) . '"';
+                if (isset($typeFields[$field])) {
+                    $selectField = $typeFields[$field];
+                }
+				$remappedFields[$fieldAlias] = $selectField;
 				
 				if (in_array($name, $sum)) {
 					$remappedFields[$fieldAlias] = 'SUM(' . $remappedFields[$fieldAlias] .')';
 				}
-
+                
 			} else {
-//				$remappedFields[$alias] = $field;
-				// just store it as is
-				$simpleFields[$alias] = $field;
-				if (in_array($name, $sum)) {
-					$simpleFields[$alias] = 'SUM(' . $simpleFields[$alias] .')';
-				}
+                if (isset($typeFields[$name])) {
+                    $remappedFields[$name] = $typeFields[$name];
+                } else {
+                    
+                    if (in_array($name, $sum)) {
+                        $remappedFields[$field] = 'SUM(' . $field .')';
+                    } else {
+                        // just store it as is
+                        $simpleFields[$alias] = $field;
+                    }
+                }
 			}
-
+            
 			$field  = preg_replace('/Value$/', '', $field);
 			$db = Config::inst()->get($class, 'db');
 
@@ -457,7 +492,6 @@ class FreeformReport extends AdvancedReport {
 		$dataQuery->setQueriedColumns($simpleFields);
 		// converts all the fields being queried into the appropriate
 		// tables for querying.
-
 
 		$query = $dataQuery->getFinalisedQuery();
 
