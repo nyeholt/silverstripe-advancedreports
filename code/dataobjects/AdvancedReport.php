@@ -505,7 +505,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		for ($i = 0, $c = count($sel); $i < $c; $i++) {
 			$field = $sel[$i];
 
-			if(preg_match('/^(.*) +AS +"([^"]*)"/i', $field, $matches)) {
+			if(preg_match('/^(.*) +AS +"?([^"]*)"?/i', $field, $matches)) {
 				$field = $matches[2];
 			}
 
@@ -638,7 +638,7 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 	 *
 	 * @return array
 	 */
-	protected function getConditions($defaults = array(), $withOperands = false) {
+	public function getConditions($defaults = array(), $withOperands = false) {
 		$reportFields = $this->getReportableFields();
 		$fields = $this->ConditionFields->getValues();
 		if (!$fields || !count($fields)) {
