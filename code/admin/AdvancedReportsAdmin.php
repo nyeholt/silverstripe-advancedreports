@@ -29,6 +29,10 @@ class AdvancedReportsAdmin extends ModelAdmin {
 		$grid->getConfig()->getComponentByType('GridFieldDetailForm')->setItemRequestClass(
 			'AdvancedReportsAdminItemRequest'
 		);
+        
+        if (class_exists('GridFieldCopyButton')) {
+            $grid->getConfig()->addComponent(new GridFieldCopyButton(), 'GridFieldEditButton');
+        }
 
 		return $form;
 	}
