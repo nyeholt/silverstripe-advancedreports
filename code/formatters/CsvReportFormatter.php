@@ -21,7 +21,7 @@ class CsvReportFormatter extends ReportFormatter {
 			$header[] = $display;
 		}
 
-		return '"'.implode('", "', $header).'"';
+		return '"'.implode('","', $header).'"';
 	}
 
 	/**
@@ -40,7 +40,7 @@ class CsvReportFormatter extends ReportFormatter {
 				}
 				$csvRow[] = $value;
 			}
-			$body[] = '"'.implode('", "', $csvRow).'"';
+			$body[] = '"'.implode('","', $csvRow).'"';
 		}
 
 		return implode("\n", $body);
