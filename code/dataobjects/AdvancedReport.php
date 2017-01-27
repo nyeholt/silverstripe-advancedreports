@@ -925,6 +925,9 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 		$reportData = array_merge($reportData, $additionalData);
 
 		$output = $this->customise($reportData)->renderWith($templates);
+        if ($output instanceof HTMLText) {
+            $output = $output->getValue();
+        }
 
 		if (!$output) {
 			// put_contents fails if it's an empty string...
