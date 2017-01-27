@@ -8,8 +8,6 @@
  */
 class CombinedReport extends AdvancedReport {
 	private static $db = array(
-		'Title'						=> 'Varchar(255)',
-		'Description'				=> 'Text',
 	);
 
 	private static $has_many = array(
