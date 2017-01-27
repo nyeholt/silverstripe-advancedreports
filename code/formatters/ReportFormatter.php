@@ -187,7 +187,7 @@ abstract class ReportFormatter {
 						$value = $item->$field;
 					}
 				} else {
-					$value = $item[$field];
+					$value = isset($item[$field]) ? $item[$field] : '';
 				}
 
 				if (in_array($field, $colsToBlank)) {
