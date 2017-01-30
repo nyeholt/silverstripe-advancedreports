@@ -417,7 +417,9 @@ class FreeformReport extends AdvancedReport {
 			if (strpos($typeName, '.')) {
 				$relatedTables[$typeName] = $alias;
 			} else {
-				$baseTable = $typeName;
+                if (!$baseTable) {
+                    $baseTable = $typeName;
+                }
 			}
 		}
 
@@ -489,11 +491,17 @@ class FreeformReport extends AdvancedReport {
 		}
 
 		$dataQuery = new DataQuery($baseTable);
-		$dataQuery->setQueriedColumns($simpleFields);
+        $dataQuery->setQueriedColumns($simpleFields);
 		// converts all the fields being queried into the appropriate
 		// tables for querying.
-
 		$query = $dataQuery->getFinalisedQuery();
+
+        // if none were selected, we want to zero it out, otherwise the defaults
+        // added aren't going to work out for grouping
+        if (!count($simpleFields)) {
+            // we _only_ want these fields
+            $query->setSelect(array());
+        }
 
 		// explicit fields that we want to query against, that come from joins.
 		// we need to do it this way to ensure that a) the field names in the results match up to
@@ -521,7 +529,20 @@ class FreeformReport extends AdvancedReport {
 		
 		$groupBy = $this->GroupBy->getValues();
 		if (count($groupBy)) {
+
+            // add in all the selected fields also, as mysql 5.7.5 is strict about this
+            // because of ONLY_FULL_GROUP_BY
+            $allSelected = $query->getSelect();
+            foreach ($allSelected as $alias => $fieldExpr) {
+                if (!preg_match('{\w\(.+?\)}', $fieldExpr)) {
+                    $groupBy[] = $alias;
+                }
+            }
+
+            $groupBy = array_unique($groupBy);
+
 			$query->setGroupBy($groupBy);
+
 		}
 
 		$sql = $query->sql();
