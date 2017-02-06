@@ -1104,6 +1104,11 @@ class AdvancedReport extends DataObject implements PermissionProvider {
 				list($field, $operator) = explode(' ', trim($field));
 			}
 
+            if (is_array($value) && $operator == '=') {
+                // convert to "IN"
+                $operator = 'IN';
+            }
+
 			$value = $this->recursiveQuote($value);
 
 			// not using quote char if it's already escaped
