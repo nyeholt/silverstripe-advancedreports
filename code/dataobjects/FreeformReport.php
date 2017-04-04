@@ -495,12 +495,15 @@ class FreeformReport extends AdvancedReport {
 		// tables for querying.
 		$query = $dataQuery->getFinalisedQuery();
 
-        
-        // we _only_ want the fields the user selected.
+
+        $baseFields = $query->getSelect();
+        // we _only_ want the fields the user selected, so clear out and add those that are fine
         $query->setSelect(array());
 
         foreach ($simpleFields as $alias => $name) {
-            $query->selectField($name);
+            if (isset($baseFields[$name])) {
+                $query->selectField($baseFields[$name]);
+            }
         }
 
 		// explicit fields that we want to query against, that come from joins.
