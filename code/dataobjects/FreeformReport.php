@@ -525,11 +525,17 @@ class FreeformReport extends AdvancedReport {
 
 		$sort = $this->getSort();
         if ($sort !== 'ID ASC' && strpos($sort, ' ')) {
-            list($field, $dir) = explode(" ", $sort);
-            if (isset($baseFields[$field])) {
-                $field = $baseFields[$field];
+            $sortOpts = explode(",", $sort);
+            $sortClauses = array();
+            foreach ($sortOpts as $sort) {
+                $sort = trim($sort);
+                list($field, $dir) = explode(" ", $sort);
+                if (isset($baseFields[$field])) {
+                    $field = $baseFields[$field];
+                }
+                $sortClauses[] = "$field $dir";
             }
-            $query->setOrderBy("$field $dir");
+            $query->setOrderBy($sortClauses);
         }
 
 		$filter = $this->getConditions();
