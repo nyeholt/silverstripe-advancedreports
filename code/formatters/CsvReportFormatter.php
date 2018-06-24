@@ -38,7 +38,7 @@ class CsvReportFormatter extends ReportFormatter {
 				if (isset($formatting[$field])) {
 					$value = $formatting[$field]->format($value);
 				}
-				$csvRow[] = $value;
+				$csvRow[] = str_replace('"', '""', $value);
 			}
 			$body[] = '"'.implode('","', $csvRow).'"';
 		}
