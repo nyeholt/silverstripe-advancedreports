@@ -321,7 +321,16 @@ class FreeformReport extends AdvancedReport {
 						$fields["$alias$field"] = $fieldPrefix . $field;
 					}
 				}
-			}
+            }
+            
+            $dbHasOnes = Config::inst()->get($type, 'has_one', $includeInheritedDbFields);
+            if (is_array($dbHasOnes)) {
+				foreach ($dbHasOnes as $name => $relatedType) {
+                    $field = $name . "ID";
+                    $fields["$alias$field"] = $fieldPrefix . $field;
+				}
+            }
+
             if (class_exists($type)) {
                 $sng = singleton($type);
                 if (method_exists($sng, 'getAdvancedReportableFields')) {
@@ -560,8 +569,8 @@ class FreeformReport extends AdvancedReport {
 
 		}
 
-		$sql = $query->sql();
-
+        $sql = $query->sql();
+        
 		$out = $query->execute();
 
 		$rows = array();
