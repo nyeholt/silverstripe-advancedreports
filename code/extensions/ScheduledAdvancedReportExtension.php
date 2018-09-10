@@ -81,18 +81,19 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 			$this->owner->ScheduledTitle = $this->owner->Title;
 		}
 
+		$jobExists = $this->owner->QueuedJob()->exists();
 		if($this->owner->Scheduled) {
 			$changed = $this->owner->getChangedFields();
 			$changed = isset($changed['FirstScheduled'])
 				|| isset($changed['ScheduleEvery'])
 				|| isset($changed['ScheduleEveryCustom']);
 
-			if($this->owner->QueuedJobID && $changed) {
+			if($jobExists && $changed) {
 				$this->owner->QueuedJob()->delete();
 				$this->owner->QueuedJobID = 0;
 			}
 
-			if(!$this->owner->QueuedJobID) {
+			if(!$jobExists) {
 				if($this->owner->FirstScheduled) {
 					$time = date('Y-m-d H:i:s', strtotime($this->owner->FirstScheduled));
 				} else {
@@ -104,7 +105,7 @@ class ScheduledAdvancedReportExtension extends DataExtension {
 				);
 			}
 		} else {
-			if($this->owner->QueuedJobID) {
+			if($jobExists) {
 				$this->owner->QueuedJob()->delete();
 				$this->owner->QueuedJobID = 0;
 			}
