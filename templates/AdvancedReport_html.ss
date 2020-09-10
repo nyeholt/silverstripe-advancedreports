@@ -92,7 +92,7 @@ div.logo { background: transparent url(images/report_logo.png) no-repeat;  width
 			<div class="printLogo">
 			</div>
 			<h1>$Title</h1>
-			<p class="reportDescription">$Description.Raw</p>
+			<p class="reportDescription">$Description.parse(BBCodeParser)</p>
 			<p>Generated $LastEdited.Nice</p>
 		</div>
 		<div class="landscape newPage">
